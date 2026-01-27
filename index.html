@@ -3,84 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hadees Library - Admin Pro</title>
+    <title>Islamic Library | Premium Hadees App</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --primary: #004d40; --secondary: #c5a059; --bg: #f8f5f0; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); overflow: hidden; }
+        :root { --primary: #123e37; --accent: #c5a059; --bg: #f0f4f3; --white: #ffffff; --text: #2d3436; }
+        body { font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); overflow: hidden; color: var(--text); }
 
-        /* Navigation */
-        .sidebar { width: 280px; background: #fff; border-right: 1px solid #ddd; display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
-        .sidebar-header { padding: 15px; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; }
-        .chapter-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
+        /* Sidebar */
+        .sidebar { width: 340px; min-width: 340px; background: var(--primary); color: white; display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0,0,0,0.2); z-index: 100; transition: 0.3s; }
+        .side-search-box { padding: 15px; background: rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 8px; }
+        .side-input { width: 100%; padding: 12px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; box-sizing: border-box; }
+        .menu-scroll { flex-grow: 1; overflow-y: auto; padding: 15px; }
+        .book-head { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: 0.2s; }
+        .book-head:hover { background: rgba(255,255,255,0.15); }
+        .chap-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.15); margin-bottom: 5px; border-radius: 8px; padding-right: 10px; }
+        .chap-btn { flex: 1; padding: 12px; font-size: 0.85rem; cursor: pointer; color: #cbd5e0; }
+
+        /* Main Content */
+        .main-container { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+        .top-bar { padding: 15px 30px; background: white; display: flex; gap: 15px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); align-items: center; sticky; top: 0; z-index: 10; }
+        .main-search { flex: 3; padding: 12px 25px; border-radius: 30px; border: 1.5px solid #eee; outline: none; background: #f9f9f9; }
+        .num-search { width: 70px; padding: 12px; border-radius: 30px; border: 1.5px solid #eee; text-align: center; }
+
+        /* Home View Stylish */
+        .hero-section { background: linear-gradient(135deg, var(--primary), #1a5d52); padding: 60px 20px; color: white; text-align: center; border-radius: 0 0 40px 40px; margin-bottom: 40px; }
+        .hotd-card { max-width: 800px; margin: -50px auto 30px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--accent); }
         
-        .main-view { flex-grow: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
-        .top-nav { background: #fff; padding: 10px 15px; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 10px; }
-        .menu-btn { display: none; background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
-
-        /* Admin Box */
-        .admin-panel { display: none; padding: 15px; background: #e0f2f1; border-bottom: 2px solid var(--secondary); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input, textarea, select { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn-save { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; }
-        .btn-cancel { background: #757575; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; display: none; }
+        .quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; max-width: 800px; margin: 0 auto 40px; padding: 0 20px; }
+        .quick-card { background: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #eee; }
+        .quick-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--accent); }
+        .quick-card i { font-size: 24px; color: var(--accent); margin-bottom: 10px; }
 
         /* Hadees Cards */
-        .content-area { flex-grow: 1; padding: 15px; overflow-y: auto; }
-        .hadees-card { background: #fff; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 5px solid var(--secondary); position: relative; }
-        .arabic { font-size: 1.5rem; line-height: 1.8; text-align: right; direction: rtl; display: block; margin-bottom: 10px; color: #000; }
-        .translation { font-size: 1.1rem; }
-        .urdu { text-align: right; direction: rtl; }
-        .hindi { text-align: left; direction: ltr; color: #1a237e; }
+        .content-area { padding: 30px; max-width: 900px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .hadees-card { background: white; padding: 30px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); position: relative; }
+        .arabic { font-family: 'Amiri', serif; font-size: 1.8rem; text-align: right; direction: rtl; line-height: 2; color: #1e272e; margin-bottom: 20px; }
+        .translation { font-size: 1.1rem; line-height: 1.6; color: #485460; }
+        .card-actions { display: flex; gap: 15px; margin-top: 20px; border-top: 1px solid #f1f1f1; padding-top: 15px; }
+        .action-btn { cursor: pointer; color: #999; transition: 0.2s; font-size: 14px; }
+        .action-btn:hover { color: var(--accent); }
 
-        /* Action Buttons */
-        .actions { margin-top: 15px; display: none; gap: 10px; border-top: 1px solid #eee; padding-top: 10px; }
-        .edit-btn { color: #1976d2; cursor: pointer; font-weight: bold; border: none; background: none; }
-        .delete-btn { color: #d32f2f; cursor: pointer; font-weight: bold; border: none; background: none; }
-
+        /* Responsive */
+        .menu-toggle { display: none; font-size: 22px; cursor: pointer; }
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -280px; height: 100%; }
+            .sidebar { position: fixed; left: -100%; height: 100%; transition: 0.4s; }
             .sidebar.active { left: 0; }
-            .menu-btn { display: block; }
+            .menu-toggle { display: block; }
+            .hero-section { padding: 40px 15px; }
+            .hotd-card { width: 85%; }
+            .arabic { font-size: 1.4rem; }
         }
-        .book-title { font-weight: bold; background: #f0f0f0; padding: 10px; margin-top: 10px; border-radius: 5px; color: var(--primary); }
-        .chapter-item { padding: 10px 15px; border-bottom: 1px solid #eee; cursor: pointer; }
+
+        /* Admin UI */
+        .admin-btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background:rgba(0,0,0,0.7); z-index: 2000; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 500px; background: white; border-radius: 20px; padding: 30px; z-index: 2001; }
     </style>
 </head>
-<body>
+<body onload="initApp()">
 
-<div id="sidebar" class="sidebar">
-    <div class="sidebar-header"><span>Hadees Menu</span><button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:20px;">✕</button></div>
-    <div id="chapter-menu" class="chapter-list"><p style="text-align:center; padding:20px;">Loading...</p></div>
-    <button onclick="login()" id="loginBtn" style="padding:10px; background:#eee; border:none; cursor:pointer;">Admin Login</button>
+<div class="modal-overlay" id="overlay" onclick="closeM()"></div>
+<div class="modal" id="uploadModal" style="display:none;">
+    <h3>Add New Hadees</h3>
+    <input type="number" id="hnum" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;" placeholder="Hadees No.">
+    <textarea id="harb" style="width:100%; padding:12px; margin-bottom:10px; font-family:Amiri; border:1px solid #ddd; border-radius:8px;" rows="4" placeholder="Arabic Text..." dir="rtl"></textarea>
+    <textarea id="htrans" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;" rows="4" placeholder="Translation Text..."></textarea>
+    <button onclick="finalSubmit()" class="admin-btn">PUBLISH HADEES</button>
 </div>
 
-<div class="main-view">
-    <div class="top-nav">
-        <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
-        <input type="text" id="search" onkeyup="searchFn()" placeholder="Search Hadees..." style="margin:0; padding:8px 15px; border-radius:20px;">
+<div id="side-overlay" onclick="toggleMenu()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99;"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div style="padding: 25px; text-align: center;">
+        <h1 style="color:var(--accent); margin:0; font-family:Amiri; font-size: 2.5rem; cursor:pointer;" onclick="location.reload()">اَلْحَدِيْثُ</h1>
+        <small style="opacity: 0.7;">Digital Islamic Library</small>
+    </div>
+    <div class="side-search-box">
+        <input type="text" id="bS" onkeyup="filterSidebar()" class="side-input" placeholder="🔍 Search Books...">
+        <input type="text" id="cS" onkeyup="filterSidebar()" class="side-input" placeholder="🔍 Search Chapters...">
+    </div>
+    <div class="menu-scroll" id="menu"></div>
+    <div style="padding: 20px;">
+        <div id="admin-panel" style="display:none;">
+            <button class="admin-btn" style="background:rgba(255,255,255,0.2);" onclick="addBookPrompt()">+ New Book</button>
+            <div id="context-msg"></div>
+        </div>
+        <button onclick="login()" id="loginBtn" class="admin-btn" style="background:transparent; border: 1px solid rgba(255,255,255,0.3);">Admin Access</button>
+    </div>
+</aside>
+
+<main class="main-container">
+    <div class="top-bar">
+        <i class="fa-solid fa-bars menu-toggle" onclick="toggleMenu()"></i>
+        <input type="text" id="gT" onkeyup="globalSearch()" class="main-search" placeholder="Search Hadees content...">
+        <input type="number" id="gN" onkeyup="globalSearch()" class="num-search" placeholder="No.">
     </div>
 
-    <div id="admin-panel" class="admin-panel">
-        <h4 id="admin-title" style="margin:0 0 10px 0;">Nayi Hadees Dalein</h4>
-        <input type="text" id="book-in" placeholder="Kitab (Bukhari, Muslim)">
-        <input type="text" id="chap-in" placeholder="Chapter (Namaz, Roza)">
-        <textarea id="arb-in" placeholder="Arabic..." rows="3" dir="rtl"></textarea>
-        <select id="lang-sel"><option value="hindi">Hindi (हिंदी)</option><option value="urdu">Urdu (اردو)</option></select>
-        <textarea id="trans-in" placeholder="Translation..." rows="3"></textarea>
-        <div class="btn-group">
-            <button id="main-btn" class="btn-save" onclick="saveData()">Save to Global Library</button>
-            <button id="cancel-btn" class="btn-cancel" onclick="clearForm()">Cancel Edit</button>
+    <div id="home-view">
+        <div class="hero-section">
+            <h1 style="font-family:Amiri; font-size: 2.5rem; margin-bottom: 10px;">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</h1>
+            <p style="opacity: 0.9;">Welcome to the most advanced digital Hadees repository.</p>
+        </div>
+
+        <div class="hotd-card" id="hotd-section">
+            <div style="color: var(--accent); font-weight: bold; margin-bottom: 15px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+                <i class="fa-solid fa-star"></i> Hadees of the Moment
+            </div>
+            <div id="hotd-content">
+                <p style="color: #666;">Loading daily inspiration...</p>
+            </div>
+        </div>
+
+        <div class="quick-grid">
+            <div class="quick-card" onclick="document.getElementById('bS').focus();">
+                <i class="fa-solid fa-book-open"></i>
+                <div><b>Books</b></div>
+                <div id="st-b" style="color:var(--accent)">0</div>
+            </div>
+            <div class="quick-card" onclick="document.getElementById('gT').focus();">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <div><b>Search</b></div>
+                <div id="st-h" style="color:var(--accent)">0</div>
+            </div>
+            <div class="quick-card" onclick="alert('Favorites feature coming soon!')">
+                <i class="fa-solid fa-heart"></i>
+                <div><b>Saved</b></div>
+                <div style="color:var(--accent)">0</div>
+            </div>
         </div>
     </div>
 
-    <div class="content-area">
-        <h2 id="current-title" style="color:var(--primary); font-size:1.2rem; padding-left:10px;">Sari Hadees</h2>
-        <div id="hadees-container"></div>
-    </div>
-</div>
+    <div class="content-area" id="display"></div>
+</main>
 
 <script>
     const firebaseConfig = {
@@ -95,132 +154,166 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let allData = {};
-    let isAdmin = false;
-    let editID = null; // Track kar rahe hain ke kaunsi hadees edit ho rahi hai
+    let isAdmin = false, sB = "", sC = "";
 
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+    function toggleMenu() {
+        const side = document.getElementById('sidebar');
+        const over = document.getElementById('side-overlay');
+        side.classList.toggle('active');
+        over.style.display = side.classList.contains('active') ? 'block' : 'none';
+    }
+
+    function initApp() {
+        renderMenu();
+        db.ref('v11/content').on('value', snap => {
+            window.allData = snap.val() || {};
+            document.getElementById('st-h').innerText = Object.keys(window.allData).length;
+            showHOTD();
+        });
+    }
+
+    function showHOTD() {
+        const keys = Object.keys(window.allData);
+        if(keys.length > 0) {
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            const h = window.allData[randomKey];
+            document.getElementById('hotd-content').innerHTML = `
+                <div class="arabic" style="font-size: 1.5rem;">${h.arb}</div>
+                <div class="translation" style="font-size: 0.95rem; font-style: italic;">${h.trans}</div>
+                <div style="margin-top:15px; font-size: 0.8rem; color: #999;">— ${h.book}</div>
+            `;
+        }
+    }
+
+    function copyText(text) {
+        navigator.clipboard.writeText(text);
+        alert("Text Copied!");
+    }
+
+    function shareWA(arb, trans) {
+        const text = `*Hadees:*\n\n${arb}\n\n*Translation:*\n${trans}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+    }
 
     function login() {
-        if(prompt("Admin Password:") === "9950866474") {
+        if(prompt("Admin Pass:") === "9950866474") {
             isAdmin = true;
             document.getElementById('admin-panel').style.display = 'block';
             document.getElementById('loginBtn').style.display = 'none';
-            db.ref('hadees_v2').once('value', () => renderHadees()); // Re-render to show edit/delete
-        }
-    }
-
-    function saveData() {
-        const data = {
-            book: document.getElementById('book-in').value.trim(),
-            chap: document.getElementById('chap-in').value.trim(),
-            arb: document.getElementById('arb-in').value.trim(),
-            trans: document.getElementById('trans-in').value.trim(),
-            lang: document.getElementById('lang-sel').value
-        };
-
-        if(!data.book || !data.arb || !data.trans) return alert("Details bharein!");
-
-        if(editID) {
-            // Update Existing
-            db.ref('hadees_v2/' + editID).set(data).then(() => {
-                alert("Hadees Update Ho Gayi!");
-                clearForm();
-            });
-        } else {
-            // Save New
-            db.ref('hadees_v2').push(data).then(() => {
-                alert("Nayi Hadees Save Ho Gayi!");
-                clearForm();
-            });
-        }
-    }
-
-    function editHadees(id) {
-        editID = id;
-        const h = allData[id];
-        document.getElementById('book-in').value = h.book;
-        document.getElementById('chap-in').value = h.chap;
-        document.getElementById('arb-in').value = h.arb;
-        document.getElementById('trans-in').value = h.trans;
-        document.getElementById('lang-sel').value = h.lang;
-
-        document.getElementById('admin-title').innerText = "Hadees Edit Karein";
-        document.getElementById('main-btn').innerText = "Update Karein";
-        document.getElementById('cancel-btn').style.display = 'block';
-        window.scrollTo(0,0);
-    }
-
-    function clearForm() {
-        editID = null;
-        document.getElementById('book-in').value = "";
-        document.getElementById('chap-in').value = "";
-        document.getElementById('arb-in').value = "";
-        document.getElementById('trans-in').value = "";
-        document.getElementById('admin-title').innerText = "Nayi Hadees Dalein";
-        document.getElementById('main-btn').innerText = "Save to Global Library";
-        document.getElementById('cancel-btn').style.display = 'none';
-    }
-
-    function deleteHadees(id) {
-        if(confirm("Kya aap waqai ise mita dena chahte hain?")) {
-            db.ref('hadees_v2/' + id).remove();
-        }
-    }
-
-    db.ref('hadees_v2').on('value', (snapshot) => {
-        allData = snapshot.val() || {};
-        renderMenu();
-        renderHadees();
-    });
-
-    function renderHadees(chapFilter = 'all') {
-        const container = document.getElementById('hadees-container');
-        container.innerHTML = "";
-        for(let id in allData) {
-            let h = allData[id];
-            if(chapFilter === 'all' || h.chap === chapFilter) {
-                container.innerHTML += `
-                    <div class="hadees-card">
-                        <small style="color:var(--secondary)">${h.book} / ${h.chap}</small>
-                        <span class="arabic">${h.arb}</span>
-                        <div class="translation ${h.lang === 'urdu' ? 'urdu' : 'hindi'}">${h.trans}</div>
-                        <div class="actions" style="display: ${isAdmin ? 'flex' : 'none'}">
-                            <button class="edit-btn" onclick="editHadees('${id}')">✎ Edit</button>
-                            <button class="delete-btn" onclick="deleteHadees('${id}')">🗑 Delete</button>
-                        </div>
-                    </div>`;
-            }
+            renderMenu();
         }
     }
 
     function renderMenu() {
-        const menu = document.getElementById('chapter-menu');
-        menu.innerHTML = '<div class="chapter-item" onclick="filterH(\'all\', \'Sari Hadees\')">🏠 Home (All)</div>';
-        let groups = {};
-        for(let id in allData) {
-            let b = allData[id].book;
-            if(!groups[b]) groups[b] = new Set();
-            groups[b].add(allData[id].chap);
-        }
-        for(let book in groups) {
-            menu.innerHTML += `<div class="book-title">📚 ${book}</div>`;
-            groups[book].forEach(chap => {
-                menu.innerHTML += `<div class="chapter-item" onclick="filterH('${chap}', '${chap}')">${chap}</div>`;
-            });
+        db.ref('v11/structure').on('value', snap => {
+            const menu = document.getElementById('menu');
+            menu.innerHTML = "";
+            const data = snap.val() || {};
+            document.getElementById('st-b').innerText = Object.keys(data).length;
+            for(let book in data) {
+                let chHtml = "";
+                if(data[book].chaps) {
+                    Object.entries(data[book].chaps).forEach(([cid, cname]) => {
+                        chHtml += `<div class="chap-item" data-name="${cname.toLowerCase()}">
+                            <div class="chap-btn" onclick="openChapter('${book}','${cname}')">├ ${cname}</div>
+                            ${isAdmin ? `<i class="fa-solid fa-trash" style="color:red; cursor:pointer;" onclick="deleteChap('${book}','${cid}')"></i>` : ''}
+                        </div>`;
+                    });
+                }
+                menu.innerHTML += `<div class="book-wrap" data-name="${book.toLowerCase()}">
+                    <div class="book-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                        <span>📖 ${book}</span>
+                        <div class="admin-box">
+                            ${isAdmin ? `<span onclick="event.stopPropagation(); addChapPrompt('${book}')" style="color:var(--accent)">+C</span> <i class="fa-solid fa-trash" onclick="event.stopPropagation(); deleteBook('${book}')"></i>` : '<i class="fa-solid fa-chevron-down" style="font-size:10px"></i>'}
+                        </div>
+                    </div>
+                    <div class="chap-panel" style="display:none; padding-left:15px;">${chHtml}</div>
+                </div>`;
+            }
+        });
+    }
+
+    function globalSearch() {
+        let txt = document.getElementById('gT').value.toLowerCase();
+        let num = document.getElementById('gN').value;
+        const display = document.getElementById('display');
+        if(!txt && !num) { display.innerHTML=""; document.getElementById('home-view').style.display="block"; return; }
+        document.getElementById('home-view').style.display="none";
+        display.innerHTML = `<h3 style="margin-bottom:20px;">Search Results:</h3>`;
+        for(let id in window.allData) {
+            let h = window.allData[id];
+            if((h.arb.toLowerCase().includes(txt) || h.trans.toLowerCase().includes(txt)) && (!num || h.num == num)) {
+                display.innerHTML += renderHadeesCard(id, h);
+            }
         }
     }
 
-    function filterH(chap, title) {
-        document.getElementById('current-title').innerText = title;
-        renderHadees(chap);
+    function openChapter(b, c) {
+        sB = b; sC = c;
+        document.getElementById('home-view').style.display = 'none';
+        if(isAdmin) document.getElementById('context-msg').innerHTML = `<button class="admin-btn" onclick="openUploader()">+ Add to ${c}</button>`;
+        renderHadeesList(c);
         if(window.innerWidth <= 768) toggleMenu();
     }
 
-    function searchFn() {
-        let q = document.getElementById('search').value.toLowerCase();
-        document.querySelectorAll('.hadees-card').forEach(c => {
-            c.innerText.toLowerCase().includes(q) ? c.style.display='block' : c.style.display='none';
+    function renderHadeesList(chap) {
+        const display = document.getElementById('display');
+        display.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;"><h2>${chap}</h2><button onclick="location.reload()" style="border:none; background:none; color:var(--accent); cursor:pointer;"><i class="fa-solid fa-house"></i> Home</button></div>`;
+        for(let id in window.allData) {
+            let h = window.allData[id];
+            if(h.chap === chap) {
+                display.innerHTML += renderHadeesCard(id, h);
+            }
+        }
+    }
+
+    function renderHadeesCard(id, h) {
+        return `
+            <div class="hadees-card">
+                <div style="display:flex; justify-content:space-between; color:var(--accent); font-weight:bold; margin-bottom:15px;">
+                    <span>HADEES NO. ${h.num}</span>
+                    ${isAdmin ? `<i class="fa-solid fa-trash" style="color:red; cursor:pointer;" onclick="deleteHadees('${id}')"></i>` : ''}
+                </div>
+                <div class="arabic">${h.arb}</div>
+                <div class="translation">${h.trans}</div>
+                <div class="card-actions">
+                    <span class="action-btn" onclick="copyText('${h.arb}\\n\\n${h.trans}')"><i class="fa-solid fa-copy"></i> Copy</span>
+                    <span class="action-btn" onclick="shareWA('${h.arb}','${h.trans}')"><i class="fa-brands fa-whatsapp"></i> Share</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // --- Admin Logic ---
+    function deleteBook(b) { if(confirm("Delete book '"+b+"'?")) db.ref('v11/structure/'+b).remove(); }
+    function deleteChap(b, cid) { if(confirm("Delete chapter?")) db.ref('v11/structure/'+b+'/chaps/'+cid).remove(); }
+    function deleteHadees(id) { if(confirm("Delete Hadees?")) db.ref('v11/content/'+id).remove().then(()=>renderHadeesList(sC)); }
+    function addBookPrompt() { let n = prompt("Book Name:"); if(n) db.ref('v11/structure/'+n).update({title:n}); }
+    function addChapPrompt(b) { let n = prompt("Chap Name:"); if(n) db.ref('v11/structure/'+b+'/chaps').push(n); }
+    function openUploader() { document.getElementById('uploadModal').style.display='block'; document.getElementById('overlay').style.display='block'; }
+    function closeM() { document.getElementById('uploadModal').style.display='none'; document.getElementById('overlay').style.display='none'; }
+    function finalSubmit() {
+        const hnum = document.getElementById('hnum').value;
+        const payload = { book: sB, chap: sC, num: hnum, arb: document.getElementById('harb').value, trans: document.getElementById('htrans').value };
+        db.ref('v11/content').push(payload).then(() => {
+            document.getElementById('harb').value=""; document.getElementById('htrans').value="";
+            document.getElementById('hnum').value = parseInt(hnum)+1;
+            renderHadeesList(sC);
+            closeM();
+        });
+    }
+
+    function filterSidebar() {
+        let bQ = document.getElementById('bS').value.toLowerCase();
+        let cQ = document.getElementById('cS').value.toLowerCase();
+        document.querySelectorAll('.book-wrap').forEach(bw => {
+            let hasC = false;
+            bw.querySelectorAll('.chap-item').forEach(ci => {
+                if(ci.dataset.name.includes(cQ)) { ci.style.display="flex"; hasC=true; }
+                else ci.style.display="none";
+            });
+            bw.style.display = (bw.dataset.name.includes(bQ) || (cQ && hasC)) ? "block" : "none";
+            if(cQ) bw.querySelector('.chap-panel').style.display="block";
         });
     }
 </script>
