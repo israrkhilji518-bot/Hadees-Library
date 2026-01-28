@@ -14,7 +14,6 @@
         :root { --primary: #123e37; --accent: #c5a059; --bg: #f0f4f3; --white: #ffffff; --text: #2d3436; }
         body { font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); overflow: hidden; color: var(--text); }
 
-        /* Sidebar */
         .sidebar { width: 340px; min-width: 340px; background: var(--primary); color: white; display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0,0,0,0.2); z-index: 100; transition: 0.3s; }
         .side-search-box { padding: 15px; background: rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 8px; }
         .side-input { width: 100%; padding: 12px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; box-sizing: border-box; }
@@ -24,13 +23,13 @@
         .chap-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.15); margin-bottom: 5px; border-radius: 8px; padding-right: 10px; }
         .chap-btn { flex: 1; padding: 12px; font-size: 0.85rem; cursor: pointer; color: #cbd5e0; }
 
-        /* Main Content */
+        .hadees-title:hover, .book-item:hover { background: #f8f9fa; transform: translateY(-2px); }
+
         .main-container { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
-        .top-bar { padding: 15px 30px; background: white; display: flex; gap: 15px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); align-items: center; sticky; top: 0; z-index: 10; }
+        .top-bar { padding: 15px 30px; background: white; display: flex; gap: 15px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); align-items: center; position: sticky; top: 0; z-index: 10; }
         .main-search { flex: 3; padding: 12px 25px; border-radius: 30px; border: 1.5px solid #eee; outline: none; background: #f9f9f9; }
         .num-search { width: 70px; padding: 12px; border-radius: 30px; border: 1.5px solid #eee; text-align: center; }
 
-        /* Home View Stylish */
         .hero-section { background: linear-gradient(135deg, var(--primary), #1a5d52); padding: 60px 20px; color: white; text-align: center; border-radius: 0 0 40px 40px; margin-bottom: 40px; }
         .hotd-card { max-width: 800px; margin: -50px auto 30px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--accent); }
         
@@ -39,7 +38,6 @@
         .quick-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--accent); }
         .quick-card i { font-size: 24px; color: var(--accent); margin-bottom: 10px; }
 
-        /* Hadees Cards */
         .content-area { padding: 30px; max-width: 900px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         .hadees-card { background: white; padding: 30px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); position: relative; }
         .arabic { font-family: 'Amiri', serif; font-size: 1.8rem; text-align: right; direction: rtl; line-height: 2; color: #1e272e; margin-bottom: 20px; }
@@ -48,7 +46,6 @@
         .action-btn { cursor: pointer; color: #999; transition: 0.2s; font-size: 14px; }
         .action-btn:hover { color: var(--accent); }
 
-        /* Responsive */
         .menu-toggle { display: none; font-size: 22px; cursor: pointer; }
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -100%; height: 100%; transition: 0.4s; }
@@ -59,13 +56,14 @@
             .arabic { font-size: 1.4rem; }
         }
 
-        /* Admin UI */
         .admin-btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
         .modal-overlay { display: none; position: fixed; inset: 0; background:rgba(0,0,0,0.7); z-index: 2000; }
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 500px; background: white; border-radius: 20px; padding: 30px; z-index: 2001; }
     </style>
 </head>
 <body onload="initApp()">
+
+<!-- Modal और Sidebar का HTML वही रहेगा, कोई बदलाव नहीं -->
 
 <div class="modal-overlay" id="overlay" onclick="closeM()"></div>
 <div class="modal" id="uploadModal" style="display:none;">
@@ -74,6 +72,17 @@
     <textarea id="harb" style="width:100%; padding:12px; margin-bottom:10px; font-family:Amiri; border:1px solid #ddd; border-radius:8px;" rows="4" placeholder="Arabic Text..." dir="rtl"></textarea>
     <textarea id="htrans" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;" rows="4" placeholder="Translation Text..."></textarea>
     <button onclick="finalSubmit()" class="admin-btn">PUBLISH HADEES</button>
+</div>
+
+<div class="modal-overlay" id="editOverlay" onclick="closeEdit()" style="display:none;"></div>
+<div class="modal" id="editModal" style="display:none;">
+    <h3>Edit Hadees</h3>
+    <input type="hidden" id="editId">
+    <input type="number" id="editNum" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;" placeholder="Hadees No.">
+    <textarea id="editArb" style="width:100%; padding:12px; margin-bottom:10px; font-family:Amiri; border:1px solid #ddd; border-radius:8px;" rows="4" dir="rtl" placeholder="Arabic Text..."></textarea>
+    <textarea id="editTrans" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;" rows="4" placeholder="Translation Text..."></textarea>
+    <button onclick="saveEdit()" class="admin-btn" style="background:#4a90e2;">SAVE CHANGES</button>
+    <button onclick="closeEdit()" class="admin-btn" style="background:#999; margin-left:10px;">CANCEL</button>
 </div>
 
 <div id="side-overlay" onclick="toggleMenu()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99;"></div>
@@ -120,7 +129,7 @@
         </div>
 
         <div class="quick-grid">
-            <div class="quick-card" onclick="document.getElementById('bS').focus();">
+            <div class="quick-card" onclick="showAllBooks()">
                 <i class="fa-solid fa-book-open"></i>
                 <div><b>Books</b></div>
                 <div id="st-b" style="color:var(--accent)">0</div>
@@ -130,10 +139,10 @@
                 <div><b>Search</b></div>
                 <div id="st-h" style="color:var(--accent)">0</div>
             </div>
-            <div class="quick-card" onclick="alert('Favorites feature coming soon!')">
+            <div class="quick-card" id="saved-card" onclick="showFavorites()">
                 <i class="fa-solid fa-heart"></i>
                 <div><b>Saved</b></div>
-                <div style="color:var(--accent)">0</div>
+                <div id="st-saved" style="color:var(--accent)">0</div>
             </div>
         </div>
     </div>
@@ -142,6 +151,7 @@
 </main>
 
 <script>
+    // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyDkbnYW4pHJXwsFyWAtOR-R5I1hK5A4Gww",
         authDomain: "hadees-library-ea6a6.firebaseapp.com",
@@ -156,12 +166,218 @@
     const db = firebase.database();
     let isAdmin = false, sB = "", sC = "";
 
+    // Favorites Functions
+    function initFavorites() {
+        let favorites = JSON.parse(localStorage.getItem('hadees_favorites') || '[]');
+        updateSavedCount(favorites.length);
+    }
+
+    function toggleFavorite(id) {
+        let favorites = JSON.parse(localStorage.getItem('hadees_favorites') || '[]');
+        if (favorites.includes(id)) {
+            favorites = favorites.filter(fid => fid !== id);
+        } else {
+            favorites.push(id);
+        }
+        localStorage.setItem('hadees_favorites', JSON.stringify(favorites));
+        updateSavedCount(favorites.length);
+
+        if (sC) renderHadeesList(sC);
+        else if (document.getElementById('display').innerHTML.includes('Your Saved Hadees')) {
+            showFavorites();
+        } else {
+            globalSearch();
+        }
+    }
+
+    function updateSavedCount(count) {
+        document.getElementById('st-saved').innerText = count;
+    }
+
+    function isFavorite(id) {
+        let favorites = JSON.parse(localStorage.getItem('hadees_favorites') || '[]');
+        return favorites.includes(id);
+    }
+
+    function getFavoriteIcon(id) {
+        const isFav = isFavorite(id);
+        return `<i class="fa-${isFav ? 'solid' : 'regular'} fa-heart" style="color:${isFav ? 'red' : '#999'}; cursor:pointer; font-size:1.4rem;" onclick="event.stopPropagation(); toggleFavorite('${id}')"></i>`;
+    }
+
+    // Show Favorites
+    function showFavorites() {
+        const display = document.getElementById('display');
+        document.getElementById('home-view').style.display = 'none';
+        display.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h2>Your Saved Hadees</h2>
+                <button onclick="location.reload()" style="border:none; background:none; color:var(--accent); cursor:pointer;">
+                    <i class="fa-solid fa-house"></i> Home
+                </button>
+            </div>
+            <div id="favorites-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+        `;
+
+        const listContainer = document.getElementById('favorites-list');
+        const favorites = JSON.parse(localStorage.getItem('hadees_favorites') || '[]');
+
+        if (favorites.length === 0) {
+            listContainer.innerHTML = '<p style="text-align:center; color:#999;">आपने अभी तक कोई हदीस सेव नहीं की है</p>';
+            return;
+        }
+
+        favorites.forEach(fid => {
+            const h = window.allData[fid];
+            if (!h) return;
+
+            const displayTitle = h.title || `हदीस नंबर ${h.num}`;
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'hadees-title';
+            titleDiv.style.cssText = `background: white; padding: 15px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.2s;`;
+            titleDiv.innerHTML = `
+                <div style="flex:1;">
+                    <strong>${displayTitle}</strong>
+                    <small style="color:#777; display:block;">${h.book || ''} - ${h.chap || ''}</small>
+                </div>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    ${getFavoriteIcon(fid)}
+                    <i class="fa-solid fa-chevron-down" style="transition: transform 0.3s;"></i>
+                </div>
+            `;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.style.display = 'none';
+            contentDiv.innerHTML = renderHadeesCard(fid, h).replace(/class="hadees-card"/, 'style="margin:0; box-shadow:none; background:transparent; padding:20px 0;"');
+
+            titleDiv.onclick = (e) => {
+                if (e.target.closest('.fa-heart')) return;
+                const isOpen = contentDiv.style.display === 'block';
+                contentDiv.style.display = isOpen ? 'none' : 'block';
+                titleDiv.querySelector('i.fa-chevron-down').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            };
+
+            const wrapper = document.createElement('div');
+            wrapper.appendChild(titleDiv);
+            wrapper.appendChild(contentDiv);
+            listContainer.appendChild(wrapper);
+        });
+    }
+
+    // Show All Books
+    function showAllBooks() {
+        const display = document.getElementById('display');
+        document.getElementById('home-view').style.display = 'none';
+        display.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h2>All Books</h2>
+                <button onclick="location.reload()" style="border:none; background:none; color:var(--accent); cursor:pointer;">
+                    <i class="fa-solid fa-house"></i> Home
+                </button>
+            </div>
+            <div id="books-list" style="display:flex; flex-direction:column; gap:12px; max-width:800px; margin:0 auto;"></div>
+        `;
+
+        const listContainer = document.getElementById('books-list');
+
+        db.ref('v11/structure').once('value', snap => {
+            const data = snap.val() || {};
+            const books = Object.keys(data);
+
+            if (books.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center; color:#999;">कोई किताब उपलब्ध नहीं</p>';
+                return;
+            }
+
+            books.forEach(book => {
+                const bookDiv = document.createElement('div');
+                bookDiv.className = 'book-item';
+                bookDiv.style.cssText = `
+                    background: white; 
+                    padding: 18px; 
+                    border-radius: 12px; 
+                    cursor: pointer; 
+                    display: flex; 
+                    justify-content: space-between; 
+                    align-items: center; 
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+                    transition: all 0.2s;
+                `;
+                bookDiv.innerHTML = `
+                    <div>
+                        <strong style="font-size:1.1rem;">📖 ${book}</strong>
+                        <small style="color:#777; display:block;">Chapters: ${data[book].chaps ? Object.keys(data[book].chaps).length : 0}</small>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="color:var(--accent);"></i>
+                `;
+
+                bookDiv.onclick = () => openBookChapters(book, data[book]);
+
+                listContainer.appendChild(bookDiv);
+            });
+        });
+    }
+
+    function openBookChapters(book, bookData) {
+        const display = document.getElementById('display');
+        display.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h2>${book}</h2>
+                <button onclick="showAllBooks()" style="border:none; background:none; color:var(--accent); cursor:pointer;">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Books
+                </button>
+            </div>
+            <div id="chapters-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+        `;
+
+        const listContainer = document.getElementById('chapters-list');
+        const chaps = bookData.chaps || {};
+
+        if (Object.keys(chaps).length === 0) {
+            listContainer.innerHTML = '<p style="text-align:center; color:#999;">इस किताब में कोई चैप्टर नहीं</p>';
+            return;
+        }
+
+        Object.entries(chaps).forEach(([cid, cname]) => {
+            const chapDiv = document.createElement('div');
+            chapDiv.style.cssText = `
+                background: white; 
+                padding: 15px; 
+                border-radius: 12px; 
+                cursor: pointer; 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            `;
+            chapDiv.innerHTML = `
+                <div>├ ${cname}</div>
+                <i class="fa-solid fa-chevron-right" style="color:var(--accent);"></i>
+            `;
+
+            chapDiv.onclick = () => openChapter(book, cname);
+
+            listContainer.appendChild(chapDiv);
+        });
+    }
+
+    // पुराने मुख्य फंक्शन (ये जरूरी हैं, इन्हें मत हटाना)
     function toggleMenu() {
         const side = document.getElementById('sidebar');
         const over = document.getElementById('side-overlay');
-        side.classList.toggle('active');
-        over.style.display = side.classList.contains('active') ? 'block' : 'none';
+        const isActive = side.classList.toggle('active');
+        over.style.display = isActive ? 'block' : 'none';
+        document.body.style.overflow = isActive ? 'hidden' : '';
     }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('side-overlay').style.display = 'none';
+            document.body.style.overflow = '';
+            closeM();
+            closeEdit();
+        }
+    });
 
     function initApp() {
         renderMenu();
@@ -169,6 +385,7 @@
             window.allData = snap.val() || {};
             document.getElementById('st-h').innerText = Object.keys(window.allData).length;
             showHOTD();
+            initFavorites();
         });
     }
 
@@ -180,7 +397,7 @@
             document.getElementById('hotd-content').innerHTML = `
                 <div class="arabic" style="font-size: 1.5rem;">${h.arb}</div>
                 <div class="translation" style="font-size: 0.95rem; font-style: italic;">${h.trans}</div>
-                <div style="margin-top:15px; font-size: 0.8rem; color: #999;">— ${h.book}</div>
+                <div style="margin-top:15px; font-size: 0.8rem; color: #999;">— ${h.book || 'Unknown'}</div>
             `;
         }
     }
@@ -204,6 +421,10 @@
         }
     }
 
+    function escapeJS(str) {
+        return (str || '').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+    }
+
     function renderMenu() {
         db.ref('v11/structure').on('value', snap => {
             const menu = document.getElementById('menu');
@@ -215,8 +436,13 @@
                 if(data[book].chaps) {
                     Object.entries(data[book].chaps).forEach(([cid, cname]) => {
                         chHtml += `<div class="chap-item" data-name="${cname.toLowerCase()}">
-                            <div class="chap-btn" onclick="openChapter('${book}','${cname}')">├ ${cname}</div>
-                            ${isAdmin ? `<i class="fa-solid fa-trash" style="color:red; cursor:pointer;" onclick="deleteChap('${book}','${cid}')"></i>` : ''}
+                            <div class="chap-btn" onclick="openChapter('${escapeJS(book)}','${escapeJS(cname)}')">├ ${cname}</div>
+                            ${isAdmin ? `
+                                <div style="display:flex; gap:10px;">
+                                    <i class="fa-solid fa-edit" style="color:#4a90e2; cursor:pointer;" onclick="event.stopPropagation(); editChapter('${escapeJS(book)}', '${cid}', '${escapeJS(cname)}')"></i>
+                                    <i class="fa-solid fa-trash" style="color:red; cursor:pointer;" onclick="event.stopPropagation(); deleteChap('${escapeJS(book)}','${cid}')"></i>
+                                </div>
+                            ` : ''}
                         </div>`;
                     });
                 }
@@ -224,7 +450,11 @@
                     <div class="book-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
                         <span>📖 ${book}</span>
                         <div class="admin-box">
-                            ${isAdmin ? `<span onclick="event.stopPropagation(); addChapPrompt('${book}')" style="color:var(--accent)">+C</span> <i class="fa-solid fa-trash" onclick="event.stopPropagation(); deleteBook('${book}')"></i>` : '<i class="fa-solid fa-chevron-down" style="font-size:10px"></i>'}
+                            ${isAdmin ? `
+                                <span onclick="event.stopPropagation(); editBook('${escapeJS(book)}')" style="color:#4a90e2; margin-right:8px;">✏️</span>
+                                <span onclick="event.stopPropagation(); addChapPrompt('${escapeJS(book)}')" style="color:var(--accent)">+C</span> 
+                                <i class="fa-solid fa-trash" onclick="event.stopPropagation(); deleteBook('${escapeJS(book)}')"></i>
+                            ` : '<i class="fa-solid fa-chevron-down" style="font-size:10px"></i>'}
                         </div>
                     </div>
                     <div class="chap-panel" style="display:none; padding-left:15px;">${chHtml}</div>
@@ -237,14 +467,67 @@
         let txt = document.getElementById('gT').value.toLowerCase();
         let num = document.getElementById('gN').value;
         const display = document.getElementById('display');
-        if(!txt && !num) { display.innerHTML=""; document.getElementById('home-view').style.display="block"; return; }
+        if(!txt && !num) { 
+            display.innerHTML=""; 
+            document.getElementById('home-view').style.display="block"; 
+            return; 
+        }
         document.getElementById('home-view').style.display="none";
-        display.innerHTML = `<h3 style="margin-bottom:20px;">Search Results:</h3>`;
+        display.innerHTML = `<h3 style="margin-bottom:20px;">Search Results:</h3><div id="search-list" style="display:flex; flex-direction:column; gap:10px;"></div>`;
+
+        const listContainer = document.getElementById('search-list');
+        let found = false;
+
         for(let id in window.allData) {
             let h = window.allData[id];
             if((h.arb.toLowerCase().includes(txt) || h.trans.toLowerCase().includes(txt)) && (!num || h.num == num)) {
-                display.innerHTML += renderHadeesCard(id, h);
+                found = true;
+                const displayTitle = h.title || `हदीस नंबर ${h.num}`;
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'hadees-title';
+                titleDiv.style.cssText = `
+                    background: white; 
+                    padding: 15px; 
+                    border-radius: 12px; 
+                    cursor: pointer; 
+                    display: flex; 
+                    justify-content: space-between; 
+                    align-items: center; 
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                    transition: all 0.2s;
+                `;
+                titleDiv.innerHTML = `
+                    <div style="flex:1;">
+                        <strong>${displayTitle}</strong>
+                        <small style="color:#777; display:block;">${h.book || ''} - ${h.chap || ''}</small>
+                    </div>
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        ${getFavoriteIcon(id)}
+                        ${isAdmin ? `<i class="fa-solid fa-edit" style="color:#4a90e2; cursor:pointer;" onclick="event.stopPropagation(); editHadeesTitle('${id}', '${escapeJS(h.title || '')}')"></i>` : ''}
+                        <i class="fa-solid fa-chevron-down" style="transition: transform 0.3s;"></i>
+                    </div>
+                `;
+
+                const contentDiv = document.createElement('div');
+                contentDiv.style.display = 'none';
+                contentDiv.innerHTML = renderHadeesCard(id, h).replace(/class="hadees-card"/, 'style="margin:0; box-shadow:none; background:transparent; padding:20px 0;"');
+
+                titleDiv.onclick = (e) => {
+                    if (e.target.closest('.fa-heart') || e.target.closest('.fa-edit')) return;
+                    const isOpen = contentDiv.style.display === 'block';
+                    contentDiv.style.display = isOpen ? 'none' : 'block';
+                    titleDiv.querySelector('i.fa-chevron-down').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+                };
+
+                const wrapper = document.createElement('div');
+                wrapper.appendChild(titleDiv);
+                wrapper.appendChild(contentDiv);
+                listContainer.appendChild(wrapper);
             }
+        }
+
+        if(!found) {
+            listContainer.innerHTML = '<p style="text-align:center; color:#999;">कोई हदीस नहीं मिली</p>';
         }
     }
 
@@ -258,36 +541,195 @@
 
     function renderHadeesList(chap) {
         const display = document.getElementById('display');
-        display.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;"><h2>${chap}</h2><button onclick="location.reload()" style="border:none; background:none; color:var(--accent); cursor:pointer;"><i class="fa-solid fa-house"></i> Home</button></div>`;
+        display.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h2>${chap}</h2>
+                <button onclick="location.reload()" style="border:none; background:none; color:var(--accent); cursor:pointer;">
+                    <i class="fa-solid fa-house"></i> Home
+                </button>
+            </div>
+            <div id="hadees-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+        `;
+
+        const listContainer = document.getElementById('hadees-list');
+        const hadeesInChap = [];
+
         for(let id in window.allData) {
             let h = window.allData[id];
             if(h.chap === chap) {
-                display.innerHTML += renderHadeesCard(id, h);
+                hadeesInChap.push({id, ...h});
             }
         }
+
+        hadeesInChap.sort((a,b) => parseInt(a.num) - parseInt(b.num));
+
+        if(hadeesInChap.length === 0) {
+            listContainer.innerHTML = '<p style="text-align:center; color:#999;">कोई हदीस उपलब्ध नहीं</p>';
+            return;
+        }
+
+        hadeesInChap.forEach(h => {
+            const displayTitle = h.title || `हदीस नंबर ${h.num}`;
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'hadees-title';
+            titleDiv.style.cssText = `
+                background: white; 
+                padding: 15px; 
+                border-radius: 12px; 
+                cursor: pointer; 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                transition: all 0.2s;
+            `;
+            titleDiv.innerHTML = `
+                <div style="flex:1;">
+                    <strong>${displayTitle}</strong>
+                    <small style="color:#777; display:block;">${h.book || ''}</small>
+                </div>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    ${getFavoriteIcon(h.id)}
+                    ${isAdmin ? `<i class="fa-solid fa-edit" style="color:#4a90e2; cursor:pointer;" onclick="event.stopPropagation(); editHadeesTitle('${h.id}', '${escapeJS(h.title || '')}')"></i>` : ''}
+                    <i class="fa-solid fa-chevron-down" style="transition: transform 0.3s;"></i>
+                </div>
+            `;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.style.display = 'none';
+            contentDiv.innerHTML = renderHadeesCard(h.id, h).replace(/class="hadees-card"/, 'style="margin:0; box-shadow:none; background:transparent; padding:20px 0;"');
+
+            titleDiv.onclick = (e) => {
+                if (e.target.closest('.fa-heart') || e.target.closest('.fa-edit')) return;
+                const isOpen = contentDiv.style.display === 'block';
+                contentDiv.style.display = isOpen ? 'none' : 'block';
+                titleDiv.querySelector('i.fa-chevron-down').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            };
+
+            const wrapper = document.createElement('div');
+            wrapper.appendChild(titleDiv);
+            wrapper.appendChild(contentDiv);
+            listContainer.appendChild(wrapper);
+        });
     }
 
     function renderHadeesCard(id, h) {
+        const displayTitle = h.title ? `<div style="font-weight:bold; color:var(--accent); margin-bottom:12px; font-size:1.2rem;">${h.title}</div>` : '';
         return `
             <div class="hadees-card">
+                ${displayTitle}
                 <div style="display:flex; justify-content:space-between; color:var(--accent); font-weight:bold; margin-bottom:15px;">
                     <span>HADEES NO. ${h.num}</span>
-                    ${isAdmin ? `<i class="fa-solid fa-trash" style="color:red; cursor:pointer;" onclick="deleteHadees('${id}')"></i>` : ''}
+                    <div style="display:flex; gap:15px;">
+                        ${getFavoriteIcon(id)}
+                        ${isAdmin ? `
+                            <div style="display:flex; gap:12px;">
+                                <i class="fa-solid fa-edit" style="color:#4a90e2; cursor:pointer;" onclick="editHadees('${id}', '${h.num}', '${escapeJS(h.arb)}', '${escapeJS(h.trans)}')"></i>
+                                <i class="fa-solid fa-trash" style="color:red; cursor:pointer;" onclick="deleteHadees('${id}')"></i>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
                 <div class="arabic">${h.arb}</div>
                 <div class="translation">${h.trans}</div>
                 <div class="card-actions">
-                    <span class="action-btn" onclick="copyText('${h.arb}\\n\\n${h.trans}')"><i class="fa-solid fa-copy"></i> Copy</span>
-                    <span class="action-btn" onclick="shareWA('${h.arb}','${h.trans}')"><i class="fa-brands fa-whatsapp"></i> Share</span>
+                    <span class="action-btn" onclick="copyText('${escapeJS(h.arb)}\\n\\n${escapeJS(h.trans)}')"><i class="fa-solid fa-copy"></i> Copy</span>
+                    <span class="action-btn" onclick="shareWA('${escapeJS(h.arb)}','${escapeJS(h.trans)}')"><i class="fa-brands fa-whatsapp"></i> Share</span>
                 </div>
             </div>
         `;
     }
 
-    // --- Admin Logic ---
-    function deleteBook(b) { if(confirm("Delete book '"+b+"'?")) db.ref('v11/structure/'+b).remove(); }
-    function deleteChap(b, cid) { if(confirm("Delete chapter?")) db.ref('v11/structure/'+b+'/chaps/'+cid).remove(); }
-    function deleteHadees(id) { if(confirm("Delete Hadees?")) db.ref('v11/content/'+id).remove().then(()=>renderHadeesList(sC)); }
+    function editHadeesTitle(id, currentTitle) {
+        const newTitle = prompt("नया हदीस टाइटल डालें (खाली छोड़ने पर पुराना हट जाएगा):", currentTitle);
+        if (newTitle !== null) {
+            const updateData = {};
+            if (newTitle.trim() === '') {
+                updateData.title = null;
+            } else {
+                updateData.title = newTitle.trim();
+            }
+            db.ref('v11/content/' + id).update(updateData).then(() => {
+                alert("टाइटल अपडेट हो गया!");
+                if (sC) renderHadeesList(sC);
+                else globalSearch();
+            }).catch(err => alert("एरर: " + err.message));
+        }
+    }
+
+    function editHadees(id, num, arb, trans) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editNum').value = num;
+        document.getElementById('editArb').value = arb;
+        document.getElementById('editTrans').value = trans;
+        document.getElementById('editModal').style.display = 'block';
+        document.getElementById('editOverlay').style.display = 'block';
+    }
+
+    function closeEdit() {
+        document.getElementById('editModal').style.display = 'none';
+        document.getElementById('editOverlay').style.display = 'none';
+    }
+
+    function saveEdit() {
+        const id = document.getElementById('editId').value;
+        const oldData = window.allData[id] || {};
+        const payload = {
+            num: document.getElementById('editNum').value,
+            arb: document.getElementById('editArb').value,
+            trans: document.getElementById('editTrans').value,
+            book: oldData.book || sB,
+            chap: oldData.chap || sC,
+            title: oldData.title || null
+        };
+        db.ref('v11/content/' + id).update(payload).then(() => {
+            alert("Hadees Updated!");
+            closeEdit();
+            if(sC) renderHadeesList(sC);
+            else globalSearch();
+        }).catch(err => alert("Error: " + err.message));
+    }
+
+    function editBook(oldBook) {
+        let newName = prompt("New Book Name:", oldBook);
+        if(newName && newName !== oldBook) {
+            db.ref('v11/structure').once('value', snap => {
+                const data = snap.val() || {};
+                if(data[oldBook]) {
+                    const bookData = data[oldBook];
+                    db.ref('v11/structure/' + newName).set(bookData);
+                    db.ref('v11/structure/' + oldBook).remove();
+                    db.ref('v11/content').once('value', csnap => {
+                        const cdata = csnap.val() || {};
+                        for(let key in cdata) {
+                            if(cdata[key].book === oldBook) {
+                                db.ref('v11/content/' + key + '/book').set(newName);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    function editChapter(book, cid, oldChap) {
+        let newChap = prompt("New Chapter Name:", oldChap);
+        if(newChap && newChap !== oldChap) {
+            db.ref('v11/structure/' + book + '/chaps/' + cid).set(newChap);
+            db.ref('v11/content').once('value', snap => {
+                const data = snap.val() || {};
+                for(let key in data) {
+                    if(data[key].book === book && data[key].chap === oldChap) {
+                        db.ref('v11/content/' + key + '/chap').set(newChap);
+                    }
+                }
+            });
+        }
+    }
+
+    function deleteBook(b) { if(confirm("Delete book '"+b+"'? All chapters and hadees will be lost.")) db.ref('v11/structure/'+b).remove(); }
+    function deleteChap(b, cid) { if(confirm("Delete chapter? All hadees in it will be lost.")) db.ref('v11/structure/'+b+'/chaps/'+cid).remove(); }
+    function deleteHadees(id) { if(confirm("Delete Hadees?")) db.ref('v11/content/'+id).remove().then(()=> { if(sC) renderHadeesList(sC); }); }
     function addBookPrompt() { let n = prompt("Book Name:"); if(n) db.ref('v11/structure/'+n).update({title:n}); }
     function addChapPrompt(b) { let n = prompt("Chap Name:"); if(n) db.ref('v11/structure/'+b+'/chaps').push(n); }
     function openUploader() { document.getElementById('uploadModal').style.display='block'; document.getElementById('overlay').style.display='block'; }
@@ -296,8 +738,9 @@
         const hnum = document.getElementById('hnum').value;
         const payload = { book: sB, chap: sC, num: hnum, arb: document.getElementById('harb').value, trans: document.getElementById('htrans').value };
         db.ref('v11/content').push(payload).then(() => {
-            document.getElementById('harb').value=""; document.getElementById('htrans').value="";
-            document.getElementById('hnum').value = parseInt(hnum)+1;
+            document.getElementById('harb').value=""; 
+            document.getElementById('htrans').value="";
+            document.getElementById('hnum').value = parseInt(hnum) + 1 || 1;
             renderHadeesList(sC);
             closeM();
         });
