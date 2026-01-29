@@ -11,66 +11,170 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+        
         :root { --primary: #123e37; --accent: #c5a059; --bg: #f0f4f3; --white: #ffffff; --text: #2d3436; }
         body { font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); overflow: hidden; color: var(--text); }
 
-        .sidebar { width: 340px; min-width: 340px; background: var(--primary); color: white; display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0,0,0,0.2); z-index: 100; transition: 0.3s; }
-        .side-search-box { padding: 15px; background: rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 8px; }
-        .side-input { width: 100%; padding: 12px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; box-sizing: border-box; }
+        .sidebar { width: 340px; min-width: 340px; background: var(--primary); color: white; display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0,0,0,0.2); z-index: 100; transition: 0.3s; animation: slideInLeft 0.4s ease-out; }
+        .side-search-box { padding: 15px; background: rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 8px; animation: fadeIn 0.5s ease-out 0.1s both; }
+        .side-input { width: 100%; padding: 12px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; box-sizing: border-box; font-family: 'Inter', sans-serif; font-size: 0.95rem; }
         .menu-scroll { flex-grow: 1; overflow-y: auto; padding: 15px; }
-        .book-head { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: 0.2s; }
-        .book-head:hover { background: rgba(255,255,255,0.15); }
-        .chap-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.15); margin-bottom: 5px; border-radius: 8px; padding-right: 10px; }
-        .chap-btn { flex: 1; padding: 12px; font-size: 0.85rem; cursor: pointer; color: #cbd5e0; }
+        .sidebar-bottom { padding: 20px; background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.1); }
+        .book-head { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transition: 0.3s ease; font-family: 'Inter', sans-serif; animation: fadeIn 0.4s ease-out; }
+        .book-head:hover { background: rgba(255,255,255,0.15); transform: translateX(5px); }
+        .chap-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.9); margin-bottom: 5px; border-radius: 8px; padding-right: 10px; animation: slideInRight 0.3s ease-out; transition: 0.2s; }
+        .chap-item:hover { transform: translateX(-3px); }
+        .chap-btn { flex: 1; padding: 12px; font-size: 0.95rem; cursor: pointer; color: #000000; font-weight: 500; font-family: 'Inter', sans-serif; }
 
-        .hadees-title:hover, .book-item:hover { background: #f8f9fa; transform: translateY(-2px); }
+        .hadees-title:hover, .book-item:hover { background: #f8f9fa; transform: translateY(-3px); transition: 0.3s ease; box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important; }
 
-        .main-container { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
-        .top-bar { padding: 15px 30px; background: white; display: flex; gap: 15px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); align-items: center; position: sticky; top: 0; z-index: 10; }
-        .main-search { flex: 3; padding: 12px 25px; border-radius: 30px; border: 1.5px solid #eee; outline: none; background: #f9f9f9; }
-        .num-search { width: 70px; padding: 12px; border-radius: 30px; border: 1.5px solid #eee; text-align: center; }
+        .main-container { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch; }
+        .top-bar { padding: 15px 30px; background: white; display: flex; gap: 15px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); align-items: center; position: sticky; top: 0; z-index: 10; animation: slideInDown 0.4s ease-out; }
+        #home-view { display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        @keyframes slideInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .main-search { flex: 1; padding: 12px 25px; border-radius: 30px; border: 1.5px solid #eee; outline: none; background: #f9f9f9; font-family: 'Inter', sans-serif; font-size: 0.95rem; }
 
-        .hero-section { background: linear-gradient(135deg, var(--primary), #1a5d52); padding: 60px 20px; color: white; text-align: center; border-radius: 0 0 40px 40px; margin-bottom: 40px; }
-        .hotd-card { max-width: 800px; margin: -50px auto 30px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--accent); }
+        .hero-section { background: linear-gradient(135deg, var(--primary), #1a5d52); padding: 60px 20px; color: white; text-align: center; border-radius: 0 0 40px 40px; margin-bottom: 40px; animation: slideInUp 0.6s ease-out; }
+        .hotd-card { max-width: 800px; margin: -50px auto 30px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--accent); animation: slideInUp 0.6s ease-out; }
         
         .quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; max-width: 800px; margin: 0 auto 40px; padding: 0 20px; }
-        .quick-card { background: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #eee; }
-        .quick-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--accent); }
+        .quick-card { background: white; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid #eee; font-family: 'Inter', sans-serif; animation: scaleIn 0.5s ease-out; }
+        .quick-card:hover { transform: translateY(-8px) scale(1.05); box-shadow: 0 12px 24px rgba(0,0,0,0.15); border-color: var(--accent); }
         .quick-card i { font-size: 24px; color: var(--accent); margin-bottom: 10px; }
+        .quick-card b { font-size: 1rem; display: block; margin: 8px 0 5px 0; }
+        .quick-card div:last-child { font-size: 1.1rem; font-weight: 600; }
 
         .content-area { padding: 30px; max-width: 900px; margin: 0 auto; width: 100%; box-sizing: border-box; }
-        .hadees-card { background: white; padding: 30px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); position: relative; }
+        .hadees-card { background: white; padding: 30px; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); position: relative; animation: fadeIn 0.4s ease-out; transition: 0.3s ease; }
+        .hadees-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); transform: translateY(-2px); }
         .arabic { font-family: 'Amiri', serif; font-size: 1.8rem; text-align: right; direction: rtl; line-height: 2; color: #1e272e; margin-bottom: 20px; }
-        .translation { font-size: 1.1rem; line-height: 1.6; color: #485460; }
+        .translation { font-family: 'Inter', sans-serif; font-size: 1rem; line-height: 1.6; color: #485460; }
         .card-actions { display: flex; gap: 15px; margin-top: 20px; border-top: 1px solid #f1f1f1; padding-top: 15px; }
-        .action-btn { cursor: pointer; color: #999; transition: 0.2s; font-size: 14px; }
-        .action-btn:hover { color: var(--accent); }
+        .action-btn { cursor: pointer; color: #999; transition: 0.3s ease; font-size: 0.95rem; font-family: 'Inter', sans-serif; font-weight: 500; }
+        .action-btn:hover { color: var(--accent); transform: scale(1.1); display: inline-block; }
 
         .menu-toggle { display: none; font-size: 22px; cursor: pointer; }
+        
+        /* Tablet (iPad) - 768px and below */
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -100%; height: 100%; transition: 0.4s; }
-            .sidebar.active { left: 0; }
-            .menu-toggle { display: block; }
-            .hero-section { padding: 40px 15px; }
-            .hotd-card { width: 85%; }
-            .arabic { font-size: 1.4rem; }
+            body { display: flex; flex-direction: column; height: 100vh; }
+            .sidebar { position: fixed; left: -100%; height: 100%; width: 340px; transition: 0.4s ease-in-out; top: 0; }
+            .sidebar.active { left: 0; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
+            .main-container { flex-grow: 1; }
+            .menu-toggle { display: block; padding: 10px; }
+            .top-bar { padding: 12px 20px; }
+            .main-search { padding: 10px 20px; font-size: 0.95rem; }
+            .hero-section { padding: 40px 20px; }
+            .hotd-card { width: 90%; margin: -40px auto 20px; padding: 25px; }
+            .quick-grid { grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 15px; }
+            .quick-card { padding: 18px 10px; }
+            .quick-card i { font-size: 22px; }
+            .content-area { padding: 20px 15px; }
+            .hadees-card { padding: 25px 20px; margin-bottom: 20px; }
+            .arabic { font-size: 1.5rem; line-height: 1.9; }
+            .translation { font-size: 0.95rem; }
+            .card-actions { gap: 12px; }
+            .action-btn { font-size: 0.9rem; padding: 8px 12px; }
+            .side-search-box { padding: 12px; gap: 8px; }
+            .side-input { padding: 11px; font-size: 0.92rem; }
+            .book-head { padding: 12px; font-size: 0.95rem; }
+            .chap-btn { padding: 10px; font-size: 0.92rem; }
+            .modal { width: 90%; max-width: 500px; padding: 25px; }
+            .modal h3 { font-size: 1.2rem; }
         }
 
-        .admin-btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        .modal-overlay { display: none; position: fixed; inset: 0; background:rgba(0,0,0,0.7); z-index: 2000; }
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 500px; background: white; border-radius: 20px; padding: 30px; z-index: 2001; }
+        /* Small Tablet - 600px and below */
+        @media (max-width: 600px) {
+            .sidebar { width: 85vw; }
+            .content-area { padding: 15px 12px; }
+            .hadees-card { padding: 20px 15px; }
+            .arabic { font-size: 1.3rem; }
+            .quick-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .quick-card { padding: 15px; }
+            .hotd-card { padding: 20px; }
+        }
+
+        /* Mobile Phone - 480px and below */
+        @media (max-width: 480px) {
+            * { -webkit-tap-highlight-color: transparent; }
+            body { height: 100vh; flex-direction: column; }
+            .sidebar { width: 100%; left: -100%; height: 100vh; display: flex; flex-direction: column; }
+            .sidebar.active { left: 0; width: 100%; }
+            .sidebar-bottom { padding: 15px; flex-shrink: 0; }
+            .menu-scroll { flex: 1; overflow-y: auto; }
+            .main-container { flex: 1; overflow-y: auto; height: calc(100vh - 60px); }
+            .top-bar { padding: 10px 12px; gap: 8px; position: sticky; top: 0; display: flex; align-items: center; }
+            .main-search { padding: 9px 15px; font-size: 0.9rem; flex: 1; min-width: 0; }
+            .top-bar button { padding: 10px 12px; font-size: 14px; }
+            .hero-section { padding: 25px 15px; margin-bottom: 15px; }
+            .hero-section h1 { font-size: 1.6rem; margin-bottom: 8px; }
+            .hero-section p { font-size: 0.9rem; }
+            .hotd-card { width: 95%; padding: 18px; margin: -35px auto 15px; border-radius: 15px; }
+            .hotd-card > div:first-child { font-size: 0.85rem; }
+            .quick-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 10px; margin: 0 auto 20px; }
+            .quick-card { padding: 12px 8px; border-radius: 12px; }
+            .quick-card i { font-size: 18px; margin-bottom: 6px; }
+            .quick-card b { font-size: 0.85rem; margin: 5px 0 4px 0; }
+            .quick-card div:last-child { font-size: 1rem; }
+            .content-area { padding: 12px 10px; max-width: 100%; }
+            .hadees-card { padding: 18px 15px; margin-bottom: 12px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+            .hadees-card > div:first-child { font-size: 0.8rem; }
+            .arabic { font-size: 1.15rem; line-height: 1.8; margin-bottom: 15px; }
+            .translation { font-size: 0.88rem; line-height: 1.5; }
+            .card-actions { flex-direction: column; gap: 8px; margin-top: 15px; padding-top: 12px; }
+            .action-btn { font-size: 0.85rem; min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 10px; }
+            .modal { width: 95%; padding: 18px; border-radius: 15px; max-width: calc(100vw - 20px); }
+            .modal h3 { font-size: 1.05rem; margin-bottom: 15px; }
+            .modal input, .modal textarea { padding: 10px 12px !important; font-size: 0.9rem !important; margin-bottom: 12px !important; }
+            .modal textarea { rows: 3; }
+            .side-search-box { gap: 8px; padding: 10px; }
+            .side-input { padding: 9px 12px; font-size: 0.88rem; min-height: 44px; }
+            .book-wrap { margin-bottom: 5px; }
+            .book-head { padding: 12px; font-size: 0.92rem; border-radius: 10px; }
+            .chap-item { margin-bottom: 4px; border-radius: 8px; }
+            .chap-btn { padding: 10px; font-size: 0.9rem; }
+            .book-item { min-height: 44px; }
+            .hadees-title { min-height: 44px; }
+        }
+
+        /* Extra Small Mobile - 360px and below */
+        @media (max-width: 360px) {
+            .hero-section h1 { font-size: 1.4rem; }
+            .quick-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .quick-card { padding: 10px 6px; }
+            .quick-card i { font-size: 16px; }
+            .quick-card b { font-size: 0.8rem; }
+            .arabic { font-size: 1rem; line-height: 1.7; }
+            .translation { font-size: 0.85rem; }
+            .hadees-card { padding: 15px 12px; }
+            .main-search { font-size: 0.85rem; }
+            .side-input { font-size: 0.85rem; }
+        }
+
+        .admin-btn { background: var(--accent); color: white; border: none; padding: 12px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 10px; font-family: 'Inter', sans-serif; font-size: 0.95rem; transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .admin-btn:hover { opacity: 0.9; transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 16px rgba(197, 160, 89, 0.3); }
+        .admin-btn:active { transform: translateY(-1px) scale(0.98); }
+        .modal-overlay { display: none; position: fixed; inset: 0; background:rgba(0,0,0,0.7); z-index: 2000; animation: fadeIn 0.3s ease-out; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 500px; background: white; border-radius: 20px; padding: 30px; z-index: 2001; animation: scaleIn 0.3s ease-out; }
+        .modal h3 { font-family: 'Inter', sans-serif; font-size: 1.3rem; margin-bottom: 20px; animation: slideInUp 0.4s ease-out; }
     </style>
 </head>
 <body onload="initApp()">
 
-<!-- Modal और Sidebar का HTML वही रहेगा, कोई बदलाव नहीं -->
-
 <div class="modal-overlay" id="overlay" onclick="closeM()"></div>
 <div class="modal" id="uploadModal" style="display:none;">
     <h3>Add New Hadees</h3>
-    <input type="number" id="hnum" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;" placeholder="Hadees No.">
-    <textarea id="harb" style="width:100%; padding:12px; margin-bottom:10px; font-family:Amiri; border:1px solid #ddd; border-radius:8px;" rows="4" placeholder="Arabic Text..." dir="rtl"></textarea>
-    <textarea id="htrans" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;" rows="4" placeholder="Translation Text..."></textarea>
+    <input type="number" id="hnum" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; font-family:'Inter', sans-serif; font-size:0.95rem;" placeholder="Hadees No.">
+    <textarea id="harb" style="width:100%; padding:12px; margin-bottom:10px; font-family:Amiri; border:1px solid #ddd; border-radius:8px; font-size:1rem;" rows="4" placeholder="Arabic Text..." dir="rtl"></textarea>
+    <textarea id="htrans" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; font-family:'Inter', sans-serif; font-size:0.95rem;" rows="4" placeholder="Translation Text..."></textarea>
     <button onclick="finalSubmit()" class="admin-btn">PUBLISH HADEES</button>
 </div>
 
@@ -78,11 +182,11 @@
 <div class="modal" id="editModal" style="display:none;">
     <h3>Edit Hadees</h3>
     <input type="hidden" id="editId">
-    <input type="number" id="editNum" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;" placeholder="Hadees No.">
-    <textarea id="editArb" style="width:100%; padding:12px; margin-bottom:10px; font-family:Amiri; border:1px solid #ddd; border-radius:8px;" rows="4" dir="rtl" placeholder="Arabic Text..."></textarea>
-    <textarea id="editTrans" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;" rows="4" placeholder="Translation Text..."></textarea>
-    <button onclick="saveEdit()" class="admin-btn" style="background:#4a90e2;">SAVE CHANGES</button>
-    <button onclick="closeEdit()" class="admin-btn" style="background:#999; margin-left:10px;">CANCEL</button>
+    <input type="number" id="editNum" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; font-family:'Inter', sans-serif; font-size:0.95rem;" placeholder="Hadees No.">
+    <textarea id="editArb" style="width:100%; padding:12px; margin-bottom:10px; font-family:Amiri; border:1px solid #ddd; border-radius:8px; font-size:1rem;" rows="4" dir="rtl" placeholder="Arabic Text..."></textarea>
+    <textarea id="editTrans" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; font-family:'Inter', sans-serif; font-size:0.95rem;" rows="4" placeholder="Translation Text..."></textarea>
+    <button onclick="saveEdit()" class="admin-btn" style="background:#4a90e2; margin-right:10px;">SAVE CHANGES</button>
+    <button onclick="closeEdit()" class="admin-btn" style="background:#999;">CANCEL</button>
 </div>
 
 <div id="side-overlay" onclick="toggleMenu()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:99;"></div>
@@ -90,41 +194,41 @@
 <aside class="sidebar" id="sidebar">
     <div style="padding: 25px; text-align: center;">
         <h1 style="color:var(--accent); margin:0; font-family:Amiri; font-size: 2.5rem; cursor:pointer;" onclick="location.reload()">اَلْحَدِيْثُ</h1>
-        <small style="opacity: 0.7;">Digital Islamic Library</small>
+        <small style="opacity: 0.7; font-family:'Inter', sans-serif; font-size: 0.85rem;">Digital Islamic Library</small>
     </div>
     <div class="side-search-box">
         <input type="text" id="bS" onkeyup="filterSidebar()" class="side-input" placeholder="🔍 Search Books...">
         <input type="text" id="cS" onkeyup="filterSidebar()" class="side-input" placeholder="🔍 Search Chapters...">
     </div>
     <div class="menu-scroll" id="menu"></div>
-    <div style="padding: 20px;">
+    <div class="sidebar-bottom">
         <div id="admin-panel" style="display:none;">
             <button class="admin-btn" style="background:rgba(255,255,255,0.2);" onclick="addBookPrompt()">+ New Book</button>
             <div id="context-msg"></div>
         </div>
-        <button onclick="login()" id="loginBtn" class="admin-btn" style="background:transparent; border: 1px solid rgba(255,255,255,0.3);">Admin Access</button>
+        <button onclick="login()" id="loginBtn" class="admin-btn" style="background:transparent; border: 1px solid rgba(255,255,255,0.3); color: white;">Admin Access</button>
     </div>
 </aside>
 
 <main class="main-container">
     <div class="top-bar">
         <i class="fa-solid fa-bars menu-toggle" onclick="toggleMenu()"></i>
-        <input type="text" id="gT" onkeyup="globalSearch()" class="main-search" placeholder="Search Hadees content...">
-        <input type="number" id="gN" onkeyup="globalSearch()" class="num-search" placeholder="No.">
+        <input type="text" id="gT" onkeyup="globalSearch()" class="main-search" placeholder="Search Hadees content or number...">
+        <button onclick="globalSearch()" style="background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; transition: 0.3s;"><i class="fa-solid fa-magnifying-glass"></i></button>
     </div>
 
     <div id="home-view">
         <div class="hero-section">
             <h1 style="font-family:Amiri; font-size: 2.5rem; margin-bottom: 10px;">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</h1>
-            <p style="opacity: 0.9;">Welcome to the most advanced digital Hadees repository.</p>
+            <p style="opacity: 0.9; font-family:'Inter', sans-serif; font-size: 1rem; font-weight: 400;">Welcome to the most advanced digital Hadees repository.</p>
         </div>
 
         <div class="hotd-card" id="hotd-section">
-            <div style="color: var(--accent); font-weight: bold; margin-bottom: 15px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+            <div style="color: var(--accent); font-weight: 600; margin-bottom: 15px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; font-family:'Inter', sans-serif;">
                 <i class="fa-solid fa-star"></i> Hadees of the Moment
             </div>
             <div id="hotd-content">
-                <p style="color: #666;">Loading daily inspiration...</p>
+                <p style="color: #666; font-family:'Inter', sans-serif; font-size: 0.95rem;">Loading daily inspiration...</p>
             </div>
         </div>
 
@@ -144,6 +248,21 @@
                 <div><b>Saved</b></div>
                 <div id="st-saved" style="color:var(--accent)">0</div>
             </div>
+            <div class="quick-card" id="admin-card" style="display:none;" onclick="document.getElementById('home-admin-section').scrollIntoView({behavior: 'smooth'});">
+                <i class="fa-solid fa-cog"></i>
+                <div><b>Admin</b></div>
+                <div style="color:var(--accent)">✓</div>
+            </div>
+        </div>
+
+        <div id="home-admin-section" style="display:none; padding: 0 20px 40px; animation: slideInUp 0.6s ease-out;">
+            <div style="background: rgba(197, 160, 89, 0.1); border-left: 4px solid var(--accent); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h3 style="color: var(--accent); margin: 0 0 15px 0; font-family: 'Inter', sans-serif;">Admin Control Panel</h3>
+                <button class="admin-btn" style="background:var(--accent); margin-top: 0;" onclick="addBookPrompt()">
+                    <i class="fa-solid fa-plus" style="margin-right: 8px;"></i> Add New Hadees
+                </button>
+                <div id="home-context-msg"></div>
+            </div>
         </div>
     </div>
 
@@ -151,7 +270,6 @@
 </main>
 
 <script>
-    // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyDkbnYW4pHJXwsFyWAtOR-R5I1hK5A4Gww",
         authDomain: "hadees-library-ea6a6.firebaseapp.com",
@@ -165,8 +283,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     let isAdmin = false, sB = "", sC = "";
+    let currentBookData = null;
 
-    // Favorites Functions
     function initFavorites() {
         let favorites = JSON.parse(localStorage.getItem('hadees_favorites') || '[]');
         updateSavedCount(favorites.length);
@@ -181,584 +299,203 @@
         }
         localStorage.setItem('hadees_favorites', JSON.stringify(favorites));
         updateSavedCount(favorites.length);
-
-        if (sC) renderHadeesList(sC);
-        else if (document.getElementById('display').innerHTML.includes('Your Saved Hadees')) {
-            showFavorites();
-        } else {
-            globalSearch();
-        }
+        if (sC) renderHadeesList(sC, sB);
+        else if (document.getElementById('display').innerHTML.includes('Your Saved Hadees')) showFavorites();
+        else globalSearch();
     }
 
-    function updateSavedCount(count) {
-        document.getElementById('st-saved').innerText = count;
-    }
-
-    function isFavorite(id) {
-        let favorites = JSON.parse(localStorage.getItem('hadees_favorites') || '[]');
-        return favorites.includes(id);
-    }
-
+    function updateSavedCount(count) { document.getElementById('st-saved').innerText = count; }
+    function isFavorite(id) { return (JSON.parse(localStorage.getItem('hadees_favorites') || '[]')).includes(id); }
     function getFavoriteIcon(id) {
         const isFav = isFavorite(id);
         return `<i class="fa-${isFav ? 'solid' : 'regular'} fa-heart" style="color:${isFav ? 'red' : '#999'}; cursor:pointer; font-size:1.4rem;" onclick="event.stopPropagation(); toggleFavorite('${id}')"></i>`;
     }
 
-    // Show Favorites
     function showFavorites() {
         const display = document.getElementById('display');
         document.getElementById('home-view').style.display = 'none';
-        display.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-                <h2>Your Saved Hadees</h2>
-                <button onclick="location.reload()" style="border:none; background:none; color:var(--accent); cursor:pointer;">
-                    <i class="fa-solid fa-house"></i> Home
-                </button>
-            </div>
-            <div id="favorites-list" style="display:flex; flex-direction:column; gap:10px;"></div>
-        `;
-
+        display.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; animation: slideInUp 0.4s ease-out;"><h2 style="color:black; font-family:'Inter', sans-serif;">Your Saved Hadees</h2><button onclick="location.reload()" style="border:none; background:none; color:black; cursor:pointer; font-family:'Inter', sans-serif; transition:0.3s; animation: slideInUp 0.5s ease-out;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"><i class="fa-solid fa-house"></i> Home</button></div><div id="favorites-list" style="display:flex; flex-direction:column; gap:10px;"></div>`;
         const listContainer = document.getElementById('favorites-list');
         const favorites = JSON.parse(localStorage.getItem('hadees_favorites') || '[]');
-
-        if (favorites.length === 0) {
-            listContainer.innerHTML = '<p style="text-align:center; color:#999;">आपने अभी तक कोई हदीस सेव नहीं की है</p>';
-            return;
-        }
-
+        if (favorites.length === 0) { listContainer.innerHTML = '<p style="text-align:center; color:#999;">कोई हदीस सेव नहीं की गई</p>'; return; }
         favorites.forEach(fid => {
-            const h = window.allData[fid];
-            if (!h) return;
-
-            const displayTitle = h.title || `हदीस नंबर ${h.num}`;
+            const h = window.allData[fid]; if (!h) return;
             const titleDiv = document.createElement('div');
             titleDiv.className = 'hadees-title';
-            titleDiv.style.cssText = `background: white; padding: 15px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.2s;`;
-            titleDiv.innerHTML = `
-                <div style="flex:1;">
-                    <strong>${displayTitle}</strong>
-                    <small style="color:#777; display:block;">${h.book || ''} - ${h.chap || ''}</small>
-                </div>
-                <div style="display:flex; gap:12px; align-items:center;">
-                    ${getFavoriteIcon(fid)}
-                    <i class="fa-solid fa-chevron-down" style="transition: transform 0.3s;"></i>
-                </div>
-            `;
-
+            titleDiv.style.cssText = `background: white; padding: 15px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); color: black; font-family: 'Inter', sans-serif; animation: fadeIn 0.4s ease-out; transition: 0.3s ease;`;
+            titleDiv.innerHTML = `<div style="flex:1;"><strong style="color: black; font-family:'Inter', sans-serif;">${h.title || 'Hadees ' + h.num}</strong><small style="color:#777; display:block; font-family:'Inter', sans-serif;">${h.book || ''}</small></div><div style="display:flex; gap:12px; align-items:center;">${getFavoriteIcon(fid)}<i class="fa-solid fa-chevron-down" style="color:black; transition:0.3s;"></i></div>`;
+            titleDiv.onmouseover = function() { this.style.transform = 'translateY(-2px)'; };
+            titleDiv.onmouseout = function() { this.style.transform = 'translateY(0)'; };
             const contentDiv = document.createElement('div');
             contentDiv.style.display = 'none';
-            contentDiv.innerHTML = renderHadeesCard(fid, h).replace(/class="hadees-card"/, 'style="margin:0; box-shadow:none; background:transparent; padding:20px 0;"');
-
-            titleDiv.onclick = (e) => {
-                if (e.target.closest('.fa-heart')) return;
-                const isOpen = contentDiv.style.display === 'block';
-                contentDiv.style.display = isOpen ? 'none' : 'block';
-                titleDiv.querySelector('i.fa-chevron-down').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-            };
-
-            const wrapper = document.createElement('div');
-            wrapper.appendChild(titleDiv);
-            wrapper.appendChild(contentDiv);
-            listContainer.appendChild(wrapper);
+            contentDiv.innerHTML = renderHadeesCard(fid, h);
+            titleDiv.onclick = () => { contentDiv.style.display = contentDiv.style.display === 'block' ? 'none' : 'block'; };
+            listContainer.appendChild(titleDiv); listContainer.appendChild(contentDiv);
         });
     }
 
-    // Show All Books
     function showAllBooks() {
         const display = document.getElementById('display');
         document.getElementById('home-view').style.display = 'none';
-        display.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-                <h2>All Books</h2>
-                <button onclick="location.reload()" style="border:none; background:none; color:var(--accent); cursor:pointer;">
-                    <i class="fa-solid fa-house"></i> Home
-                </button>
-            </div>
-            <div id="books-list" style="display:flex; flex-direction:column; gap:12px; max-width:800px; margin:0 auto;"></div>
-        `;
-
-        const listContainer = document.getElementById('books-list');
-
+        display.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; animation: slideInUp 0.4s ease-out;"><h2 style="color:black; font-family:'Inter', sans-serif;">All Books</h2><button onclick="location.reload()" style="border:none; background:none; color:black; cursor:pointer; font-family:'Inter', sans-serif; transition:0.3s; animation: slideInUp 0.5s ease-out;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"><i class="fa-solid fa-house"></i> Home</button></div><div id="books-list" style="display:flex; flex-direction:column; gap:12px; max-width:800px; margin:0 auto;"></div>`;
         db.ref('v11/structure').once('value', snap => {
             const data = snap.val() || {};
-            const books = Object.keys(data);
-
-            if (books.length === 0) {
-                listContainer.innerHTML = '<p style="text-align:center; color:#999;">कोई किताब उपलब्ध नहीं</p>';
-                return;
-            }
-
-            books.forEach(book => {
+            const listContainer = document.getElementById('books-list');
+            let delay = 0;
+            Object.keys(data).forEach(book => {
                 const bookDiv = document.createElement('div');
                 bookDiv.className = 'book-item';
-                bookDiv.style.cssText = `
-                    background: white; 
-                    padding: 18px; 
-                    border-radius: 12px; 
-                    cursor: pointer; 
-                    display: flex; 
-                    justify-content: space-between; 
-                    align-items: center; 
-                    box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-                    transition: all 0.2s;
-                `;
-                bookDiv.innerHTML = `
-                    <div>
-                        <strong style="font-size:1.1rem;">📖 ${book}</strong>
-                        <small style="color:#777; display:block;">Chapters: ${data[book].chaps ? Object.keys(data[book].chaps).length : 0}</small>
-                    </div>
-                    <i class="fa-solid fa-chevron-right" style="color:var(--accent);"></i>
-                `;
-
+                bookDiv.style.cssText = `background: white; padding: 18px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 3px 10px rgba(0,0,0,0.06); color: black; font-family: 'Inter', sans-serif; animation: fadeIn 0.4s ease-out ${delay}s both; transition: 0.3s ease;`;
+                bookDiv.innerHTML = `<div><strong style="font-family:'Inter', sans-serif;">📖 ${book}</strong></div><i class="fa-solid fa-chevron-right" style="color:var(--accent); transition:0.3s;"></i>`;
+                bookDiv.onmouseover = function() { this.style.transform = 'translateY(-3px)'; this.querySelector('i').style.transform = 'translateX(5px)'; };
+                bookDiv.onmouseout = function() { this.style.transform = 'translateY(0)'; this.querySelector('i').style.transform = 'translateX(0)'; };
                 bookDiv.onclick = () => openBookChapters(book, data[book]);
-
                 listContainer.appendChild(bookDiv);
+                delay += 0.05;
             });
         });
     }
 
     function openBookChapters(book, bookData) {
+        currentBookData = bookData;
         const display = document.getElementById('display');
-        display.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-                <h2>${book}</h2>
-                <button onclick="showAllBooks()" style="border:none; background:none; color:var(--accent); cursor:pointer;">
-                    <i class="fa-solid fa-arrow-left"></i> Back to Books
-                </button>
-            </div>
-            <div id="chapters-list" style="display:flex; flex-direction:column; gap:10px;"></div>
-        `;
-
+        display.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; animation: slideInUp 0.4s ease-out;"><h2 style="color: black; font-family:'Inter', sans-serif;">${book}</h2><button onclick="showAllBooks()" style="border:none; background:none; color:black; cursor:pointer; font-weight:bold; font-family:'Inter', sans-serif; transition:0.3s; animation: slideInUp 0.5s ease-out;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"><i class="fa-solid fa-arrow-left"></i> Back</button></div><div id="chapters-list" style="display:flex; flex-direction:column; gap:10px;"></div>`;
         const listContainer = document.getElementById('chapters-list');
-        const chaps = bookData.chaps || {};
-
-        if (Object.keys(chaps).length === 0) {
-            listContainer.innerHTML = '<p style="text-align:center; color:#999;">इस किताब में कोई चैप्टर नहीं</p>';
-            return;
-        }
-
-        Object.entries(chaps).forEach(([cid, cname]) => {
+        let delay = 0;
+        Object.entries(bookData.chaps || {}).forEach(([cid, cname]) => {
             const chapDiv = document.createElement('div');
-            chapDiv.style.cssText = `
-                background: white; 
-                padding: 15px; 
-                border-radius: 12px; 
-                cursor: pointer; 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            `;
-            chapDiv.innerHTML = `
-                <div>├ ${cname}</div>
-                <i class="fa-solid fa-chevron-right" style="color:var(--accent);"></i>
-            `;
-
+            chapDiv.style.cssText = `background: white; padding: 15px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); color: black; font-family: 'Inter', sans-serif; animation: fadeIn 0.4s ease-out ${delay}s both; transition: 0.3s ease;`;
+            chapDiv.innerHTML = `<div>├ ${cname}</div><i class="fa-solid fa-chevron-right" style="color:var(--accent); transition:0.3s;"></i>`;
+            chapDiv.onmouseover = function() { this.style.transform = 'translateY(-2px)'; this.querySelector('i').style.transform = 'translateX(5px)'; };
+            chapDiv.onmouseout = function() { this.style.transform = 'translateY(0)'; this.querySelector('i').style.transform = 'translateX(0)'; };
             chapDiv.onclick = () => openChapter(book, cname);
-
             listContainer.appendChild(chapDiv);
+            delay += 0.05;
         });
     }
 
-    // पुराने मुख्य फंक्शन (ये जरूरी हैं, इन्हें मत हटाना)
     function toggleMenu() {
         const side = document.getElementById('sidebar');
-        const over = document.getElementById('side-overlay');
         const isActive = side.classList.toggle('active');
-        over.style.display = isActive ? 'block' : 'none';
-        document.body.style.overflow = isActive ? 'hidden' : '';
+        document.getElementById('side-overlay').style.display = isActive ? 'block' : 'none';
     }
-
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('side-overlay').style.display = 'none';
-            document.body.style.overflow = '';
-            closeM();
-            closeEdit();
-        }
-    });
 
     function initApp() {
         renderMenu();
         db.ref('v11/content').on('value', snap => {
             window.allData = snap.val() || {};
             document.getElementById('st-h').innerText = Object.keys(window.allData).length;
-            showHOTD();
-            initFavorites();
+            showHOTD(); initFavorites();
         });
     }
 
     function showHOTD() {
         const keys = Object.keys(window.allData);
         if(keys.length > 0) {
-            const randomKey = keys[Math.floor(Math.random() * keys.length)];
-            const h = window.allData[randomKey];
-            document.getElementById('hotd-content').innerHTML = `
-                <div class="arabic" style="font-size: 1.5rem;">${h.arb}</div>
-                <div class="translation" style="font-size: 0.95rem; font-style: italic;">${h.trans}</div>
-                <div style="margin-top:15px; font-size: 0.8rem; color: #999;">— ${h.book || 'Unknown'}</div>
-            `;
+            const h = window.allData[keys[Math.floor(Math.random() * keys.length)]];
+            document.getElementById('hotd-content').innerHTML = `<div class="arabic" style="font-size: 1.5rem;">${h.arb}</div><div class="translation" style="font-size: 0.95rem;">${h.trans}</div>`;
         }
     }
 
-    function copyText(text) {
-        navigator.clipboard.writeText(text);
-        alert("Text Copied!");
+    function login() { 
+        if(prompt("Admin Pass:") === "9950866474") { 
+            isAdmin = true; 
+            document.getElementById('admin-panel').style.display = 'block'; 
+            document.getElementById('home-admin-section').style.display = 'block'; 
+            document.getElementById('loginBtn').style.display = 'none'; 
+            renderMenu(); 
+        } 
     }
-
-    function shareWA(arb, trans) {
-        const text = `*Hadees:*\n\n${arb}\n\n*Translation:*\n${trans}`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
-    }
-
-    function login() {
-        if(prompt("Admin Pass:") === "9950866474") {
-            isAdmin = true;
-            document.getElementById('admin-panel').style.display = 'block';
-            document.getElementById('loginBtn').style.display = 'none';
-            renderMenu();
-        }
-    }
-
-    function escapeJS(str) {
-        return (str || '').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
-    }
+    function escapeJS(str) { return (str || '').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n'); }
 
     function renderMenu() {
         db.ref('v11/structure').on('value', snap => {
-            const menu = document.getElementById('menu');
-            menu.innerHTML = "";
+            const menu = document.getElementById('menu'); menu.innerHTML = "";
             const data = snap.val() || {};
             document.getElementById('st-b').innerText = Object.keys(data).length;
             for(let book in data) {
                 let chHtml = "";
-                if(data[book].chaps) {
-                    Object.entries(data[book].chaps).forEach(([cid, cname]) => {
-                        chHtml += `<div class="chap-item" data-name="${cname.toLowerCase()}">
-                            <div class="chap-btn" onclick="openChapter('${escapeJS(book)}','${escapeJS(cname)}')">├ ${cname}</div>
-                            ${isAdmin ? `
-                                <div style="display:flex; gap:10px;">
-                                    <i class="fa-solid fa-edit" style="color:#4a90e2; cursor:pointer;" onclick="event.stopPropagation(); editChapter('${escapeJS(book)}', '${cid}', '${escapeJS(cname)}')"></i>
-                                    <i class="fa-solid fa-trash" style="color:red; cursor:pointer;" onclick="event.stopPropagation(); deleteChap('${escapeJS(book)}','${cid}')"></i>
-                                </div>
-                            ` : ''}
-                        </div>`;
-                    });
-                }
-                menu.innerHTML += `<div class="book-wrap" data-name="${book.toLowerCase()}">
-                    <div class="book-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-                        <span>📖 ${book}</span>
-                        <div class="admin-box">
-                            ${isAdmin ? `
-                                <span onclick="event.stopPropagation(); editBook('${escapeJS(book)}')" style="color:#4a90e2; margin-right:8px;">✏️</span>
-                                <span onclick="event.stopPropagation(); addChapPrompt('${escapeJS(book)}')" style="color:var(--accent)">+C</span> 
-                                <i class="fa-solid fa-trash" onclick="event.stopPropagation(); deleteBook('${escapeJS(book)}')"></i>
-                            ` : '<i class="fa-solid fa-chevron-down" style="font-size:10px"></i>'}
-                        </div>
-                    </div>
-                    <div class="chap-panel" style="display:none; padding-left:15px;">${chHtml}</div>
-                </div>`;
+                Object.entries(data[book].chaps || {}).forEach(([cid, cname]) => {
+                    chHtml += `<div class="chap-item"><div class="chap-btn" onclick="openChapter('${escapeJS(book)}','${escapeJS(cname)}')">├ ${cname}</div></div>`;
+                });
+                menu.innerHTML += `<div class="book-wrap"><div class="book-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><span>📖 ${book}</span></div><div class="chap-panel" style="display:none; padding-left:15px;">${chHtml}</div></div>`;
             }
         });
     }
 
+    // UPDATED Global Search (Ab sirf ek input se search karega)
     function globalSearch() {
         let txt = document.getElementById('gT').value.toLowerCase();
-        let num = document.getElementById('gN').value;
         const display = document.getElementById('display');
-        if(!txt && !num) { 
-            display.innerHTML=""; 
-            document.getElementById('home-view').style.display="block"; 
-            return; 
-        }
+        if(!txt) { display.innerHTML=""; document.getElementById('home-view').style.display="block"; return; }
         document.getElementById('home-view').style.display="none";
-        display.innerHTML = `<h3 style="margin-bottom:20px;">Search Results:</h3><div id="search-list" style="display:flex; flex-direction:column; gap:10px;"></div>`;
-
+        display.innerHTML = `<h3 style="color:black; margin-bottom:20px; font-family:'Inter', sans-serif; animation: slideInUp 0.4s ease-out;">Results:</h3><div id="search-list" style="display:flex; flex-direction:column; gap:10px;"></div>`;
         const listContainer = document.getElementById('search-list');
-        let found = false;
-
+        let delay = 0;
         for(let id in window.allData) {
             let h = window.allData[id];
-            if((h.arb.toLowerCase().includes(txt) || h.trans.toLowerCase().includes(txt)) && (!num || h.num == num)) {
-                found = true;
-                const displayTitle = h.title || `हदीस नंबर ${h.num}`;
+            // Search in text or check if text matches the Hadees number
+            if(h.arb.toLowerCase().includes(txt) || h.trans.toLowerCase().includes(txt) || h.num.toString() === txt) {
                 const titleDiv = document.createElement('div');
                 titleDiv.className = 'hadees-title';
-                titleDiv.style.cssText = `
-                    background: white; 
-                    padding: 15px; 
-                    border-radius: 12px; 
-                    cursor: pointer; 
-                    display: flex; 
-                    justify-content: space-between; 
-                    align-items: center; 
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                    transition: all 0.2s;
-                `;
-                titleDiv.innerHTML = `
-                    <div style="flex:1;">
-                        <strong>${displayTitle}</strong>
-                        <small style="color:#777; display:block;">${h.book || ''} - ${h.chap || ''}</small>
-                    </div>
-                    <div style="display:flex; gap:12px; align-items:center;">
-                        ${getFavoriteIcon(id)}
-                        ${isAdmin ? `<i class="fa-solid fa-edit" style="color:#4a90e2; cursor:pointer;" onclick="event.stopPropagation(); editHadeesTitle('${id}', '${escapeJS(h.title || '')}')"></i>` : ''}
-                        <i class="fa-solid fa-chevron-down" style="transition: transform 0.3s;"></i>
-                    </div>
-                `;
-
+                titleDiv.style.cssText = `background: white; padding: 15px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); color: black; font-family: 'Inter', sans-serif; animation: fadeIn 0.4s ease-out ${delay}s both; transition: 0.3s ease;`;
+                titleDiv.innerHTML = `<div style="flex:1;"><strong style="color:black; font-family:'Inter', sans-serif;">Hadees No. ${h.num}</strong><small style="color:#777; display:block; font-family:'Inter', sans-serif;">${h.book || ''}</small></div><i class="fa-solid fa-chevron-down"></i>`;
+                titleDiv.onmouseover = function() { this.style.transform = 'translateY(-2px)'; };
+                titleDiv.onmouseout = function() { this.style.transform = 'translateY(0)'; };
                 const contentDiv = document.createElement('div');
                 contentDiv.style.display = 'none';
-                contentDiv.innerHTML = renderHadeesCard(id, h).replace(/class="hadees-card"/, 'style="margin:0; box-shadow:none; background:transparent; padding:20px 0;"');
-
-                titleDiv.onclick = (e) => {
-                    if (e.target.closest('.fa-heart') || e.target.closest('.fa-edit')) return;
-                    const isOpen = contentDiv.style.display === 'block';
-                    contentDiv.style.display = isOpen ? 'none' : 'block';
-                    titleDiv.querySelector('i.fa-chevron-down').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-                };
-
-                const wrapper = document.createElement('div');
-                wrapper.appendChild(titleDiv);
-                wrapper.appendChild(contentDiv);
-                listContainer.appendChild(wrapper);
+                contentDiv.innerHTML = renderHadeesCard(id, h);
+                titleDiv.onclick = () => { contentDiv.style.display = contentDiv.style.display === 'block' ? 'none' : 'block'; };
+                listContainer.appendChild(titleDiv); listContainer.appendChild(contentDiv);
+                delay += 0.03;
             }
-        }
-
-        if(!found) {
-            listContainer.innerHTML = '<p style="text-align:center; color:#999;">कोई हदीस नहीं मिली</p>';
         }
     }
 
     function openChapter(b, c) {
         sB = b; sC = c;
         document.getElementById('home-view').style.display = 'none';
-        if(isAdmin) document.getElementById('context-msg').innerHTML = `<button class="admin-btn" onclick="openUploader()">+ Add to ${c}</button>`;
-        renderHadeesList(c);
-        if(window.innerWidth <= 768) toggleMenu();
+        db.ref('v11/structure/' + b).once('value', snap => { currentBookData = snap.val(); renderHadeesList(c, b); });
     }
 
-    function renderHadeesList(chap) {
+    function renderHadeesList(chap, bookName) {
         const display = document.getElementById('display');
-        display.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-                <h2>${chap}</h2>
-                <button onclick="location.reload()" style="border:none; background:none; color:var(--accent); cursor:pointer;">
-                    <i class="fa-solid fa-house"></i> Home
-                </button>
-            </div>
-            <div id="hadees-list" style="display:flex; flex-direction:column; gap:10px;"></div>
-        `;
-
+        display.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; animation: slideInUp 0.4s ease-out;"><h2 style="color: black; font-family:'Inter', sans-serif;">${chap}</h2><button onclick="openBookChapters('${escapeJS(bookName)}', currentBookData)" style="border:none; background:none; color:black; cursor:pointer; font-weight:bold; font-family:'Inter', sans-serif; transition:0.3s; animation: slideInUp 0.5s ease-out;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"><i class="fa-solid fa-arrow-left"></i> Back</button></div><div id="hadees-list" style="display:flex; flex-direction:column; gap:10px;"></div>`;
         const listContainer = document.getElementById('hadees-list');
-        const hadeesInChap = [];
-
+        let delay = 0;
         for(let id in window.allData) {
             let h = window.allData[id];
             if(h.chap === chap) {
-                hadeesInChap.push({id, ...h});
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'hadees-title';
+                titleDiv.style.cssText = `background: white; padding: 15px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); color: black; font-family: 'Inter', sans-serif; animation: fadeIn 0.4s ease-out ${delay}s both; transition: 0.3s ease;`;
+                titleDiv.innerHTML = `<div style="flex:1;"><strong style="color: black; font-family:'Inter', sans-serif;">Hadees No. ${h.num}</strong></div><i class="fa-solid fa-chevron-down"></i>`;
+                titleDiv.onmouseover = function() { this.style.transform = 'translateY(-2px)'; };
+                titleDiv.onmouseout = function() { this.style.transform = 'translateY(0)'; };
+                const contentDiv = document.createElement('div');
+                contentDiv.style.display = 'none';
+                contentDiv.innerHTML = renderHadeesCard(id, h);
+                titleDiv.onclick = () => { contentDiv.style.display = contentDiv.style.display === 'block' ? 'none' : 'block'; };
+                listContainer.appendChild(titleDiv); listContainer.appendChild(contentDiv);
+                delay += 0.03;
             }
         }
-
-        hadeesInChap.sort((a,b) => parseInt(a.num) - parseInt(b.num));
-
-        if(hadeesInChap.length === 0) {
-            listContainer.innerHTML = '<p style="text-align:center; color:#999;">कोई हदीस उपलब्ध नहीं</p>';
-            return;
-        }
-
-        hadeesInChap.forEach(h => {
-            const displayTitle = h.title || `हदीस नंबर ${h.num}`;
-            const titleDiv = document.createElement('div');
-            titleDiv.className = 'hadees-title';
-            titleDiv.style.cssText = `
-                background: white; 
-                padding: 15px; 
-                border-radius: 12px; 
-                cursor: pointer; 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                transition: all 0.2s;
-            `;
-            titleDiv.innerHTML = `
-                <div style="flex:1;">
-                    <strong>${displayTitle}</strong>
-                    <small style="color:#777; display:block;">${h.book || ''}</small>
-                </div>
-                <div style="display:flex; gap:12px; align-items:center;">
-                    ${getFavoriteIcon(h.id)}
-                    ${isAdmin ? `<i class="fa-solid fa-edit" style="color:#4a90e2; cursor:pointer;" onclick="event.stopPropagation(); editHadeesTitle('${h.id}', '${escapeJS(h.title || '')}')"></i>` : ''}
-                    <i class="fa-solid fa-chevron-down" style="transition: transform 0.3s;"></i>
-                </div>
-            `;
-
-            const contentDiv = document.createElement('div');
-            contentDiv.style.display = 'none';
-            contentDiv.innerHTML = renderHadeesCard(h.id, h).replace(/class="hadees-card"/, 'style="margin:0; box-shadow:none; background:transparent; padding:20px 0;"');
-
-            titleDiv.onclick = (e) => {
-                if (e.target.closest('.fa-heart') || e.target.closest('.fa-edit')) return;
-                const isOpen = contentDiv.style.display === 'block';
-                contentDiv.style.display = isOpen ? 'none' : 'block';
-                titleDiv.querySelector('i.fa-chevron-down').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-            };
-
-            const wrapper = document.createElement('div');
-            wrapper.appendChild(titleDiv);
-            wrapper.appendChild(contentDiv);
-            listContainer.appendChild(wrapper);
-        });
     }
 
     function renderHadeesCard(id, h) {
-        const displayTitle = h.title ? `<div style="font-weight:bold; color:var(--accent); margin-bottom:12px; font-size:1.2rem;">${h.title}</div>` : '';
-        return `
-            <div class="hadees-card">
-                ${displayTitle}
-                <div style="display:flex; justify-content:space-between; color:var(--accent); font-weight:bold; margin-bottom:15px;">
-                    <span>HADEES NO. ${h.num}</span>
-                    <div style="display:flex; gap:15px;">
-                        ${getFavoriteIcon(id)}
-                        ${isAdmin ? `
-                            <div style="display:flex; gap:12px;">
-                                <i class="fa-solid fa-edit" style="color:#4a90e2; cursor:pointer;" onclick="editHadees('${id}', '${h.num}', '${escapeJS(h.arb)}', '${escapeJS(h.trans)}')"></i>
-                                <i class="fa-solid fa-trash" style="color:red; cursor:pointer;" onclick="deleteHadees('${id}')"></i>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-                <div class="arabic">${h.arb}</div>
-                <div class="translation">${h.trans}</div>
-                <div class="card-actions">
-                    <span class="action-btn" onclick="copyText('${escapeJS(h.arb)}\\n\\n${escapeJS(h.trans)}')"><i class="fa-solid fa-copy"></i> Copy</span>
-                    <span class="action-btn" onclick="shareWA('${escapeJS(h.arb)}','${escapeJS(h.trans)}')"><i class="fa-brands fa-whatsapp"></i> Share</span>
-                </div>
+        return `<div class="hadees-card">
+            <div style="color:var(--accent); font-weight:600; margin-bottom:15px; font-family:'Inter', sans-serif; font-size:0.9rem;">HADEES NO. ${h.num}</div>
+            <div class="arabic">${h.arb}</div>
+            <div class="translation">${h.trans}</div>
+            <div class="card-actions">
+                <div class="action-btn" onclick="copyText('${escapeJS(h.arb)}\\n${escapeJS(h.trans)}')"><i class="fa-solid fa-copy"></i> Copy</div>
+                <div class="action-btn" onclick="shareWA('${escapeJS(h.arb)}', '${escapeJS(h.trans)}')"><i class="fa-brands fa-whatsapp"></i> Share</div>
             </div>
-        `;
+        </div>`;
     }
 
-    function editHadeesTitle(id, currentTitle) {
-        const newTitle = prompt("नया हदीस टाइटल डालें (खाली छोड़ने पर पुराना हट जाएगा):", currentTitle);
-        if (newTitle !== null) {
-            const updateData = {};
-            if (newTitle.trim() === '') {
-                updateData.title = null;
-            } else {
-                updateData.title = newTitle.trim();
-            }
-            db.ref('v11/content/' + id).update(updateData).then(() => {
-                alert("टाइटल अपडेट हो गया!");
-                if (sC) renderHadeesList(sC);
-                else globalSearch();
-            }).catch(err => alert("एरर: " + err.message));
-        }
-    }
-
-    function editHadees(id, num, arb, trans) {
-        document.getElementById('editId').value = id;
-        document.getElementById('editNum').value = num;
-        document.getElementById('editArb').value = arb;
-        document.getElementById('editTrans').value = trans;
-        document.getElementById('editModal').style.display = 'block';
-        document.getElementById('editOverlay').style.display = 'block';
-    }
-
-    function closeEdit() {
-        document.getElementById('editModal').style.display = 'none';
-        document.getElementById('editOverlay').style.display = 'none';
-    }
-
-    function saveEdit() {
-        const id = document.getElementById('editId').value;
-        const oldData = window.allData[id] || {};
-        const payload = {
-            num: document.getElementById('editNum').value,
-            arb: document.getElementById('editArb').value,
-            trans: document.getElementById('editTrans').value,
-            book: oldData.book || sB,
-            chap: oldData.chap || sC,
-            title: oldData.title || null
-        };
-        db.ref('v11/content/' + id).update(payload).then(() => {
-            alert("Hadees Updated!");
-            closeEdit();
-            if(sC) renderHadeesList(sC);
-            else globalSearch();
-        }).catch(err => alert("Error: " + err.message));
-    }
-
-    function editBook(oldBook) {
-        let newName = prompt("New Book Name:", oldBook);
-        if(newName && newName !== oldBook) {
-            db.ref('v11/structure').once('value', snap => {
-                const data = snap.val() || {};
-                if(data[oldBook]) {
-                    const bookData = data[oldBook];
-                    db.ref('v11/structure/' + newName).set(bookData);
-                    db.ref('v11/structure/' + oldBook).remove();
-                    db.ref('v11/content').once('value', csnap => {
-                        const cdata = csnap.val() || {};
-                        for(let key in cdata) {
-                            if(cdata[key].book === oldBook) {
-                                db.ref('v11/content/' + key + '/book').set(newName);
-                            }
-                        }
-                    });
-                }
-            });
-        }
-    }
-
-    function editChapter(book, cid, oldChap) {
-        let newChap = prompt("New Chapter Name:", oldChap);
-        if(newChap && newChap !== oldChap) {
-            db.ref('v11/structure/' + book + '/chaps/' + cid).set(newChap);
-            db.ref('v11/content').once('value', snap => {
-                const data = snap.val() || {};
-                for(let key in data) {
-                    if(data[key].book === book && data[key].chap === oldChap) {
-                        db.ref('v11/content/' + key + '/chap').set(newChap);
-                    }
-                }
-            });
-        }
-    }
-
-    function deleteBook(b) { if(confirm("Delete book '"+b+"'? All chapters and hadees will be lost.")) db.ref('v11/structure/'+b).remove(); }
-    function deleteChap(b, cid) { if(confirm("Delete chapter? All hadees in it will be lost.")) db.ref('v11/structure/'+b+'/chaps/'+cid).remove(); }
-    function deleteHadees(id) { if(confirm("Delete Hadees?")) db.ref('v11/content/'+id).remove().then(()=> { if(sC) renderHadeesList(sC); }); }
-    function addBookPrompt() { let n = prompt("Book Name:"); if(n) db.ref('v11/structure/'+n).update({title:n}); }
-    function addChapPrompt(b) { let n = prompt("Chap Name:"); if(n) db.ref('v11/structure/'+b+'/chaps').push(n); }
-    function openUploader() { document.getElementById('uploadModal').style.display='block'; document.getElementById('overlay').style.display='block'; }
-    function closeM() { document.getElementById('uploadModal').style.display='none'; document.getElementById('overlay').style.display='none'; }
-    function finalSubmit() {
-        const hnum = document.getElementById('hnum').value;
-        const payload = { book: sB, chap: sC, num: hnum, arb: document.getElementById('harb').value, trans: document.getElementById('htrans').value };
-        db.ref('v11/content').push(payload).then(() => {
-            document.getElementById('harb').value=""; 
-            document.getElementById('htrans').value="";
-            document.getElementById('hnum').value = parseInt(hnum) + 1 || 1;
-            renderHadeesList(sC);
-            closeM();
-        });
-    }
-
-    function filterSidebar() {
-        let bQ = document.getElementById('bS').value.toLowerCase();
-        let cQ = document.getElementById('cS').value.toLowerCase();
-        document.querySelectorAll('.book-wrap').forEach(bw => {
-            let hasC = false;
-            bw.querySelectorAll('.chap-item').forEach(ci => {
-                if(ci.dataset.name.includes(cQ)) { ci.style.display="flex"; hasC=true; }
-                else ci.style.display="none";
-            });
-            bw.style.display = (bw.dataset.name.includes(bQ) || (cQ && hasC)) ? "block" : "none";
-            if(cQ) bw.querySelector('.chap-panel').style.display="block";
-        });
-    }
+    function copyText(t) { navigator.clipboard.writeText(t); alert("Copied!"); }
+    function shareWA(a, t) { window.open(`https://wa.me/?text=${encodeURIComponent(a + '\n\n' + t)}`); }
 </script>
 </body>
 </html>
